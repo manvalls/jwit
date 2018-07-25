@@ -1,0 +1,16 @@
+{
+  "name": "witjs",
+  "version": "1.0.0",
+  "description": "JS implementation of wit",
+  "main": "main.js",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/manvalls/witjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/manvalls/witjs/issues"
+  },
+  "author": "Manuel Valls Fernández <manolo@vlrz.es>",
+  "license": "Apache-2.0"
+}
