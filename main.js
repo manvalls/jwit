@@ -187,12 +187,20 @@
 
         case selectorType:
           return applyAll(delta, 2, rootNode, mapNodes(nodes, function(node){
-            return [node.querySelector(delta[1])];
+            try{
+              return [node.querySelector(delta[1])];
+            }catch(err){
+              return [];
+            }
           }), cb);
 
         case selectorAllType:
           return applyAll(delta, 2, rootNode, mapNodes(nodes, function(node){
-            return node.querySelectorAll(delta[1]);
+            try {
+              return node.querySelectorAll(delta[1]);
+            }catch(err){
+              return [];
+            }
           }), cb);
 
         case parentType:
