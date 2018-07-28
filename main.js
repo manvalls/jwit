@@ -174,6 +174,48 @@
       return result;
     }
 
+    function evalUnmountAttr(attr){
+      eval(attr);
+    }
+
+    function beforeUnmount(node) {
+      var beforeUnmountAttr = node.getAttribute('data-beforeunmount');
+      if (beforeUnmountAttr != null) {
+        try{
+          evalUnmountAttr.call(node, beforeUnmountAttr);
+          if (node.hasOwnProperty('beforeUnmount') && typeof node.beforeUnmount == 'function') {
+              node.beforeUnmount();
+          }
+        }catch(err){
+          setTimeout(function(){
+            throw err;
+          },0);
+        }
+      }
+    }
+
+    function cleanup(node, inclusive) {
+      var children, i;
+
+      if (inclusive) {
+        if(node.tagName == 'LINK' && node.rel == 'stylesheet'){
+          node.disabled = true;
+        }
+
+        beforeUnmount(node);
+      }
+
+      children = node.querySelectorAll('link[rel=stylesheet]');
+      for(i = 0;i<children.length;i++){
+        children[i].disabled = true;
+      }
+
+      children = node.querySelectorAll('[data-beforeunmount]');
+      for(i = 0;i<children.length;i++){
+        beforeUnmount(children[i]);
+      }
+    }
+
     function apply(delta, rootNode, nodes, cb) {
       var result;
 
