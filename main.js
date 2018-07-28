@@ -217,8 +217,63 @@
         }
       }
 
+      function attach(node, c, cb) {
+        function callback(){
+          c.done++;
+          if (c.done == c.total) {
+            cb();
+          }
+        }
+
+        c.total++;
+
+        if (node.addEventListener) {
+          node.addEventListener('load', callback, false);
+          node.addEventListener('error', callback, false);
+        } else if (node.attachEvent) {
+          node.attachEvent('onload', callback);
+          node.attachEvent('onerror', callback);
+        }
+      }
+
+      function hook(node, c, cb) {
+        var i,j,n,s,a;
+        var toListen = [];
+        var links = node.querySelectorAll('link[rel=stylesheet]');
+        var scripts = node.querySelectorAll('script');
+
+        for(i = 0;i < links.length;i++){
+          n = links[i];
+          if(!n.sheet){
+            toListen.push(n);
+          }
+        }
+
+        for(i = 0;i < scripts.length;i++){
+          n = scripts[i];
+          s = document.createElement('script');
+          s.text = n.text;
+          for(j = n.attributes.length-1;j >= 0;j--){
+            a = n.attributes[j];
+            s.setAttribute(a.name, a.value);
+          }
+
+          n.parentNode.replaceChild(s, n);
+          if(s.src){
+            toListen.push(s);
+          }
+        }
+
+        for(i = 0;i < toListen.length;i++){
+          n = toListen[i];
+          if('onload' in n && 'onerror' in n){
+            attach(n, c, cb);
+          }
+        }
+      }
+
       function apply(delta, rootNode, nodes, cb) {
-        var result,i,n;
+        var result,i,n,c;
 
         switch(delta[0]) {
 
@@ -315,6 +370,18 @@
               n.innerHTML = '';
             }
 
+          case htmlType:
+            c = {total: 0, done: 0};
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              cleanup(n, false);
+              n.innerHTML = delta[1];
+              hook(n, c, cb);
+            }
+
+            if(c.total > c.done){
+              return [0];
+            }
         }
 
       }
