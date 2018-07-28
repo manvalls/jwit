@@ -190,6 +190,9 @@
             try{
               return [node.querySelector(delta[1])];
             }catch(err){
+              setTimeout(function(){
+                throw err;
+              },0);
               return [];
             }
           }), cb);
@@ -199,6 +202,9 @@
             try {
               return node.querySelectorAll(delta[1]);
             }catch(err){
+              setTimeout(function(){
+                throw err;
+              },0);
               return [];
             }
           }), cb);
