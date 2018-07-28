@@ -218,7 +218,7 @@
       }
 
       function apply(delta, rootNode, nodes, cb) {
-        var result;
+        var result,i,n;
 
         switch(delta[0]) {
 
@@ -298,6 +298,22 @@
               while(ns && ns.nodeType !== 1) ns = ns.nextSibling;
               return ns ? [ns] : [];
             }), cb);
+
+          case removeType:
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              cleanup(n, true);
+              if (n.parentNode != null) {
+                n.parentNode.removeChild(n);
+              }
+            }
+
+          case clearType:
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              cleanup(n, false);
+              n.innerHTML = '';
+            }
 
         }
 
