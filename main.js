@@ -392,7 +392,7 @@
               }
 
               cleanup(n, true);
-              f = n.cloneNode();
+              f = n.parentNode.cloneNode();
               f.innerHTML = delta[1];
               hook(f, c, cb);
 
@@ -437,6 +437,48 @@
 
               for(j = 0;j < f.childNodes.length;j++){
                 n.insertBefore(f.childNodes[j], fc);
+              }
+            }
+
+            if(c.total > c.done){
+              return [0];
+            }
+
+          case insertAfterType:
+            c = {total: 0, done: 0};
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              if (!n.parentNode) {
+                continue;
+              }
+
+              f = n.parentNode.cloneNode();
+              f.innerHTML = delta[1];
+              hook(f, c, cb);
+
+              for(j = 0;j < f.childNodes.length;j++){
+                n.parentNode.insertBefore(f.childNodes[j], n.nextSibling);
+              }
+            }
+
+            if(c.total > c.done){
+              return [0];
+            }
+
+          case insertBeforeType:
+            c = {total: 0, done: 0};
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              if (!n.parentNode) {
+                continue;
+              }
+
+              f = n.parentNode.cloneNode();
+              f.innerHTML = delta[1];
+              hook(f, c, cb);
+
+              for(j = 0;j < f.childNodes.length;j++){
+                n.parentNode.insertBefore(f.childNodes[j], n);
               }
             }
 
