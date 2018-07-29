@@ -272,6 +272,10 @@
         }
       }
 
+      function afterChange(node){
+
+      }
+
       function apply(delta, rootNode, nodes, cb) {
         var result,i,j,n,c,f,fc;
 
@@ -363,12 +367,16 @@
               }
             }
 
+            return;
+
           case clearType:
             for(i = 0;i < nodes.length;i++){
               n = nodes[i];
               cleanup(n, false);
               n.innerHTML = '';
             }
+
+            return;
 
           case htmlType:
             c = {total: 0, done: 0};
@@ -379,9 +387,7 @@
               hook(n, c, cb);
             }
 
-            if(c.total > c.done){
-              return [0];
-            }
+            return c.total > c.done ? [0] : null;
 
           case replaceType:
             c = {total: 0, done: 0};
@@ -403,9 +409,7 @@
               n.parentNode.removeChild(n);
             }
 
-            if(c.total > c.done){
-              return [0];
-            }
+            return c.total > c.done ? [0] : null;
 
           case appendType:
             c = {total: 0, done: 0};
@@ -421,9 +425,7 @@
               }
             }
 
-            if(c.total > c.done){
-              return [0];
-            }
+            return c.total > c.done ? [0] : null;
 
           case prependType:
             c = {total: 0, done: 0};
@@ -440,9 +442,7 @@
               }
             }
 
-            if(c.total > c.done){
-              return [0];
-            }
+            return c.total > c.done ? [0] : null;
 
           case insertAfterType:
             c = {total: 0, done: 0};
@@ -461,9 +461,7 @@
               }
             }
 
-            if(c.total > c.done){
-              return [0];
-            }
+            return c.total > c.done ? [0] : null;
 
           case insertBeforeType:
             c = {total: 0, done: 0};
@@ -482,9 +480,8 @@
               }
             }
 
-            if(c.total > c.done){
-              return [0];
-            }
+            return c.total > c.done ? [0] : null;
+
         }
 
       }
