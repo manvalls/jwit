@@ -273,7 +273,7 @@
       }
 
       function apply(delta, rootNode, nodes, cb) {
-        var result,i,j,n,c,f;
+        var result,i,j,n,c,f,fc;
 
         switch(delta[0]) {
 
@@ -418,6 +418,25 @@
 
               for(j = 0;j < f.childNodes.length;j++){
                 n.appendChild(f.childNodes[j]);
+              }
+            }
+
+            if(c.total > c.done){
+              return [0];
+            }
+
+          case prependType:
+            c = {total: 0, done: 0};
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              fc = n.firstChild;
+
+              f = n.cloneNode();
+              f.innerHTML = delta[1];
+              hook(f, c, cb);
+
+              for(j = 0;j < f.childNodes.length;j++){
+                n.insertBefore(f.childNodes[j], fc);
               }
             }
 
