@@ -273,7 +273,7 @@
       }
 
       function apply(delta, rootNode, nodes, cb) {
-        var result,i,n,c;
+        var result,i,j,n,c,f;
 
         switch(delta[0]) {
 
@@ -358,7 +358,7 @@
             for(i = 0;i < nodes.length;i++){
               n = nodes[i];
               cleanup(n, true);
-              if (n.parentNode != null) {
+              if (n.parentNode) {
                 n.parentNode.removeChild(n);
               }
             }
@@ -377,6 +377,30 @@
               cleanup(n, false);
               n.innerHTML = delta[1];
               hook(n, c, cb);
+            }
+
+            if(c.total > c.done){
+              return [0];
+            }
+
+          case replaceType:
+            c = {total: 0, done: 0};
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              if (!n.parentNode) {
+                continue;
+              }
+
+              cleanup(n, true);
+              f = n.cloneNode();
+              f.innerHTML = delta[1];
+              hook(f, c, cb);
+
+              for(j = 0;j < f.childNodes.length;j++){
+                n.parentNode.insertBefore(f.childNodes[j], n);
+              }
+
+              n.parentNode.removeChild(n);
             }
 
             if(c.total > c.done){
