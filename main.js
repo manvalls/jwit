@@ -273,11 +273,23 @@
       }
 
       function afterChange(node){
-
+        var afterChangeAttr = node.getAttribute('data-afterchange');
+        if (afterChangeAttr != null) {
+          try{
+            evalCode.call(node, afterChangeAttr);
+            if (node.hasOwnProperty('afterChange') && typeof node.afterChange == 'function') {
+                node.afterChange();
+            }
+          }catch(err){
+            setTimeout(function(){
+              throw err;
+            },0);
+          }
+        }
       }
 
       function apply(delta, rootNode, nodes, cb) {
-        var result,i,j,n,c,f,fc;
+        var result,i,j,n,c,f,fc,a;
 
         switch(delta[0]) {
 
@@ -481,6 +493,17 @@
             }
 
             return c.total > c.done ? [0] : null;
+
+          case addAttrType:
+            a = delta[1];
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              for(j in a) if(a.hasOwnProperty(j)) {
+                n.setAttribute(j, a[j]);
+              }
+
+              afterChange(n);
+            }
 
         }
 
