@@ -237,7 +237,7 @@
       }
 
       function hook(node, c, cb) {
-        var i,j,n,s,a;
+        var i,j,n,s,a,at;
         var toListen = [];
         var links = node.querySelectorAll('link[rel=stylesheet]');
         var scripts = node.querySelectorAll('script');
@@ -498,6 +498,25 @@
             a = delta[1];
             for(i = 0;i < nodes.length;i++){
               n = nodes[i];
+              for(j in a) if(a.hasOwnProperty(j)) {
+                n.setAttribute(j, a[j]);
+              }
+
+              afterChange(n);
+            }
+
+          case setAttrType:
+            a = delta[1];
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+
+              for(j = n.attributes.length-1;j >= 0;j--){
+                at = n.attributes[j].name;
+                if (!a.hasOwnProperty(at)) {
+                  n.removeAttribute(at);
+                }
+              }
+
               for(j in a) if(a.hasOwnProperty(j)) {
                 n.setAttribute(j, a[j]);
               }
