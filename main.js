@@ -394,7 +394,7 @@
           });
 
           if (!delayedDelta) {
-            cb();
+            setTimeout(cb, 0);
           }
         };
       };
