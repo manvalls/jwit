@@ -406,6 +406,24 @@
             if(c.total > c.done){
               return [0];
             }
+
+          case appendType:
+            c = {total: 0, done: 0};
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+
+              f = n.cloneNode();
+              f.innerHTML = delta[1];
+              hook(f, c, cb);
+
+              for(j = 0;j < f.childNodes.length;j++){
+                n.appendChild(f.childNodes[j]);
+              }
+            }
+
+            if(c.total > c.done){
+              return [0];
+            }
         }
 
       }
