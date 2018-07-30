@@ -603,6 +603,20 @@
               afterChange(n);
             }
 
+          case rmClassType:
+            a = parseClass(delta[1])
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              m = parseClass(n.className);
+
+              for(j in a) if(a.hasOwnProperty(j)) {
+                delete m[j];
+              }
+
+              n.className = buildClass(m);
+              afterChange(n);
+            }
+
         }
 
       }
