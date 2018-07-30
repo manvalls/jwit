@@ -140,6 +140,36 @@
       }
     })();
 
+    // wit.subscribe, wit.unsubscribe and wit.trigger
+
+    (function(){
+      var listeners = {};
+      var nextId = 0;
+
+      wit['subscribe'] = function(callback){
+        var id = nextId++;
+        listeners[id] = callback;
+        return id;
+      };
+
+      wit['unsubscribe'] = function(id){
+        delete listeners[id];
+      };
+
+      wit['trigger'] = function(){
+        var i;
+        for(i in listeners) if(listeners.hasOwnProperty(i)){
+          try{
+            listeners[i]();
+          }catch(err){
+            setTimeout(function(){
+              throw err;
+            },0);
+          }
+        }
+      };
+    })();
+
     // wit.apply
 
     (function(){
@@ -633,6 +663,7 @@
             witApply(delayedDelta, rootNode)(cb);
           });
 
+          wit['trigger']();
           if (!delayedDelta) {
             setTimeout(cb, 0);
           }
