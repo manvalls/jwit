@@ -525,7 +525,7 @@
             }
 
           case rmAttrType:
-            for(i = 1;i < nodes.length;i++){
+            for(i = 0;i < nodes.length;i++){
               n = nodes[i];
               for(j = 1;j < delta.length;j++){
                 n.removeAttribute(delta[j]);
