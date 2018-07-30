@@ -538,7 +538,7 @@
             a = delta[1];
             for(i = 0;i < nodes.length;i++){
               n = nodes[i];
-              
+
               for(j in a) if(a.hasOwnProperty(j)) {
                 m = a[j].match(/^(.*?)(\s*)!important$/);
                 if (m) {
@@ -546,6 +546,16 @@
                 } else {
                   n.style.setProperty(j, a[j]);
                 }
+              }
+
+              afterChange(n);
+            }
+
+          case rmStylesType:
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              for(j = 1;j < delta.length;j++){
+                n.style.removeProperty(delta[j]);
               }
 
               afterChange(n);
