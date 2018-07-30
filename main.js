@@ -617,6 +617,11 @@
               afterChange(n);
             }
 
+          case callType:
+            for(i = 0;i < nodes.length;i++){
+              wit['call'](delta[1], delta[2], nodes[i]);
+            }
+
         }
 
       }
