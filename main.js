@@ -288,6 +288,34 @@
         }
       }
 
+      function parseClass(className){
+        var classMap = {};
+        var classes = className.split(/[\s\uFEFF\xA0]+/);
+        var i,c;
+
+        for (i = 0;i < classes.length;i++) {
+          c = classes[i];
+          if (c) {
+            classMap[c] = true;
+          }
+        }
+
+        return classMap;
+      }
+
+      function buildClass(classMap){
+        var classNames = [];
+        var i;
+
+        for (i in classMap) {
+          if(classMap.hasOwnProperty(i)) {
+            classNames.push(i);
+          }
+        }
+
+        return classNames.join(' ');
+      }
+
       function apply(delta, rootNode, nodes, cb) {
         var result,i,j,n,c,f,fc,a,m;
 
@@ -558,6 +586,20 @@
                 n.style.removeProperty(delta[j]);
               }
 
+              afterChange(n);
+            }
+
+          case addClassType:
+            a = parseClass(delta[1])
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              m = parseClass(n.className)
+
+              for(j in a) if(a.hasOwnProperty(j)) {
+                m[j] = true;
+              }
+
+              n.className = buildClass(m);
               afterChange(n);
             }
 
