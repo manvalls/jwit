@@ -289,7 +289,7 @@
       }
 
       function apply(delta, rootNode, nodes, cb) {
-        var result,i,j,n,c,f,fc,a;
+        var result,i,j,n,c,f,fc,a,m;
 
         switch(delta[0]) {
 
@@ -532,6 +532,20 @@
               }
 
               afterChange(n);
+            }
+
+          case addStylesType:
+            a = delta[1];
+            for(i = 0;i < nodes.length;i++){
+              n = nodes[i];
+              for(j in a) if(a.hasOwnProperty(j)) {
+                m = a[j].match(/^(.*?)(\s*)!important$/);
+                if (m) {
+                  n.style.setProperty(j, m[1], 'important');
+                } else {
+                  n.style.setProperty(j, a[j]);
+                }
+              }
             }
 
         }
