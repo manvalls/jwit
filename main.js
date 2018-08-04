@@ -563,6 +563,8 @@
               afterChange(n);
             }
 
+            return;
+
           case setAttrType:
             a = delta[1];
             for(i = 0;i < nodes.length;i++){
@@ -582,6 +584,8 @@
               afterChange(n);
             }
 
+            return;
+
           case rmAttrType:
             for(i = 0;i < nodes.length;i++){
               n = nodes[i];
@@ -591,6 +595,8 @@
 
               afterChange(n);
             }
+
+            return;
 
           case addStylesType:
             a = delta[1];
@@ -609,6 +615,8 @@
               afterChange(n);
             }
 
+            return;
+
           case rmStylesType:
             for(i = 0;i < nodes.length;i++){
               n = nodes[i];
@@ -618,6 +626,8 @@
 
               afterChange(n);
             }
+
+            return;
 
           case addClassType:
             a = parseClass(delta[1])
@@ -633,6 +643,8 @@
               afterChange(n);
             }
 
+            return;
+
           case rmClassType:
             a = parseClass(delta[1])
             for(i = 0;i < nodes.length;i++){
@@ -647,10 +659,14 @@
               afterChange(n);
             }
 
+            return;
+
           case callType:
             for(i = 0;i < nodes.length;i++){
               wit['call'](delta[1], delta[2], nodes[i]);
             }
+
+            return;
 
         }
 
