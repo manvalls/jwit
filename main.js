@@ -170,6 +170,7 @@
       return event;
     }
 
+    wit['event'] = buildEvent;
     wit['afterApply'] = buildEvent();
     wit['beforeUnmount'] = buildEvent();
     wit['beforeChildrenUnmount'] = buildEvent();
