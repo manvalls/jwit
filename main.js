@@ -319,13 +319,16 @@
       var i;
 
       for (i in classMap) {
-        if(classMap.hasOwnProperty(i)) {
+        if(classMap.hasOwnProperty(i) && classMap[i]) {
           classNames.push(i);
         }
       }
 
       return classNames.join(' ');
     }
+
+    wit['toClass'] = buildClass;
+    wit['fromClass'] = parseClass;
 
     function apply(delta, rootNode, nodes, cb) {
       var result,i,j,n,c,f,fc,a,m;
