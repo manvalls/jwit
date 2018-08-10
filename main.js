@@ -659,7 +659,10 @@
     wit['apply'] = function witApply(delta, rootNode){
       rootNode = rootNode || document.documentElement;
       return function(cb){
-        var delayedDelta = apply(delta, rootNode, [rootNode], function(){
+        var delayedDelta;
+        cb = cb || function(){};
+
+        delayedDelta = apply(delta, rootNode, [rootNode], function(){
           witApply(delayedDelta, rootNode)(cb);
         });
 
