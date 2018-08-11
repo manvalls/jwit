@@ -116,7 +116,7 @@
       ['call', callType],
     ];
 
-    wit['beforeUnmount'] = [removeType];
+    wit['remove'] = [removeType];
     wit['clear'] = [clearType];
 
     function defineFactory(p){
@@ -673,6 +673,47 @@
       };
     };
 
+  })();
+
+  // wit.hook
+
+  (function(){
+    function hook(node, controller){
+      var beforeUnmount = wit['event']();
+      var afterAttrChange = wit['event']();
+      var beforeUnmountToken, beforeChildrenUnmountToken, afterAttrChangeToken;
+
+      function cleanup(){
+        wit['beforeUnmount']['unsubscribe'](beforeUnmountToken);
+        wit['beforeChildrenUnmount']['unsubscribe'](beforeChildrenUnmountToken);
+        wit['afterAttrChange']['unsubscribe'](afterAttrChangeToken);
+        beforeUnmount['trigger']();
+      }
+
+      if(node.ownerDocument.contains(node)){
+        beforeUnmountToken = wit['beforeUnmount']['subscribe'](function(n){
+          if (n === node) {
+            cleanup();
+          }
+        });
+
+        beforeChildrenUnmountToken = wit['beforeChildrenUnmount']['subscribe'](function(n){
+          if (n.contains(node)) {
+            cleanup();
+          }
+        });
+
+        afterAttrChangeToken = wit['afterAttrChange']['subscribe'](function(n){
+          if (n === node) {
+            afterAttrChange['trigger']();
+          }
+        });
+
+        controller({'beforeUnmount': beforeUnmount, 'afterAttrChange': afterAttrChange});
+      }
+    }
+
+    wit['hook'] = hook;
   })();
 
   if(typeof module != 'undefined') module['exports'] = wit;
