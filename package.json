@@ -1,6 +1,6 @@
 {
   "name": "jwit",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "JS implementation of wit",
   "main": "main.js",
   "dependencies": {},
