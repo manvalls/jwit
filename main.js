@@ -172,8 +172,8 @@
 
     wit['event'] = buildEvent;
     wit['afterApply'] = buildEvent();
+    wit['beforeNodeUnmount'] = buildEvent();
     wit['beforeUnmount'] = buildEvent();
-    wit['beforeChildrenUnmount'] = buildEvent();
     wit['afterAttrChange'] = buildEvent();
     wit['beforeMount'] = buildEvent();
 
@@ -233,10 +233,10 @@
       }
 
       if (inclusive) {
-        wit['beforeChildrenUnmount']['trigger'](node);
         wit['beforeUnmount']['trigger'](node);
+        wit['beforeNodeUnmount']['trigger'](node);
       } else {
-        wit['beforeChildrenUnmount']['trigger'](node);
+        wit['beforeUnmount']['trigger'](node);
       }
     }
 
@@ -679,25 +679,25 @@
 
   (function(){
     function hook(node, controller){
-      var beforeUnmount = wit['event']();
+      var beforeNodeUnmount = wit['event']();
       var afterAttrChange = wit['event']();
-      var beforeUnmountToken, beforeChildrenUnmountToken, afterAttrChangeToken;
+      var beforeNodeUnmountToken, beforeUnmountToken, afterAttrChangeToken;
 
       function cleanup(){
+        wit['beforeNodeUnmount']['unsubscribe'](beforeNodeUnmountToken);
         wit['beforeUnmount']['unsubscribe'](beforeUnmountToken);
-        wit['beforeChildrenUnmount']['unsubscribe'](beforeChildrenUnmountToken);
         wit['afterAttrChange']['unsubscribe'](afterAttrChangeToken);
-        beforeUnmount['trigger']();
+        beforeNodeUnmount['trigger']();
       }
 
       if(node.ownerDocument.contains(node)){
-        beforeUnmountToken = wit['beforeUnmount']['subscribe'](function(n){
+        beforeNodeUnmountToken = wit['beforeNodeUnmount']['subscribe'](function(n){
           if (n === node) {
             cleanup();
           }
         });
 
-        beforeChildrenUnmountToken = wit['beforeChildrenUnmount']['subscribe'](function(n){
+        beforeUnmountToken = wit['beforeUnmount']['subscribe'](function(n){
           if (n.contains(node)) {
             cleanup();
           }
@@ -709,7 +709,7 @@
           }
         });
 
-        controller({'beforeUnmount': beforeUnmount, 'afterAttrChange': afterAttrChange});
+        controller({'beforeNodeUnmount': beforeNodeUnmount, 'afterAttrChange': afterAttrChange});
       }
     }
 
