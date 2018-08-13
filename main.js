@@ -55,7 +55,13 @@
           }
         }
 
-        func.call(that, arg, node);
+        try{
+          func.call(that, arg, node);
+        }catch(err){
+          setTimeout(function(){
+            throw err;
+          }, 0);
+        }
       };
 
       run = wit['run'];
@@ -66,13 +72,7 @@
 
         queue = [];
         for(i = 0;i < q.length;i++){
-          try{
-            wit['call'](q[i][0], q[i][1], q[i][2]);
-          }catch(err){
-            setTimeout(function(){
-              throw err;
-            }, 0);
-          }
+          wit['call'](q[i][0], q[i][1], q[i][2]);
         }
 
         if(run) {
