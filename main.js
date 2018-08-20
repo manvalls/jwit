@@ -681,36 +681,42 @@
     function hook(node, controller){
       var beforeNodeUnmount = wit['event']();
       var afterAttrChange = wit['event']();
-      var beforeNodeUnmountToken, beforeUnmountToken, afterAttrChangeToken;
+      var beforeNodeUnmountToken, beforeUnmountToken, afterAttrChangeToken, checkTimeout;
 
-      function cleanup(){
+      var cleanup = function(){
+        cleanup = function(){};
+        clearTimeout(checkTimeout);
         wit['beforeNodeUnmount']['unsubscribe'](beforeNodeUnmountToken);
         wit['beforeUnmount']['unsubscribe'](beforeUnmountToken);
         wit['afterAttrChange']['unsubscribe'](afterAttrChangeToken);
         beforeNodeUnmount['trigger']();
-      }
+      };
 
-      if(node.ownerDocument.contains(node)){
-        beforeNodeUnmountToken = wit['beforeNodeUnmount']['subscribe'](function(n){
-          if (n === node) {
-            cleanup();
-          }
-        });
+      beforeNodeUnmountToken = wit['beforeNodeUnmount']['subscribe'](function(n){
+        if (n === node) {
+          cleanup();
+        }
+      });
 
-        beforeUnmountToken = wit['beforeUnmount']['subscribe'](function(n){
-          if (n.contains(node)) {
-            cleanup();
-          }
-        });
+      beforeUnmountToken = wit['beforeUnmount']['subscribe'](function(n){
+        if (n.contains(node)) {
+          cleanup();
+        }
+      });
 
-        afterAttrChangeToken = wit['afterAttrChange']['subscribe'](function(n){
-          if (n === node) {
-            afterAttrChange['trigger']();
-          }
-        });
+      checkTimeout = setTimeout(function(){
+        if(!node.ownerDocument.contains(node)){
+          cleanup();
+        }
+      }, 0);
 
-        controller({'beforeNodeUnmount': beforeNodeUnmount, 'afterAttrChange': afterAttrChange});
-      }
+      afterAttrChangeToken = wit['afterAttrChange']['subscribe'](function(n){
+        if (n === node) {
+          afterAttrChange['trigger']();
+        }
+      });
+
+      controller({'beforeNodeUnmount': beforeNodeUnmount, 'afterAttrChange': afterAttrChange});
     }
 
     wit['hook'] = hook;
