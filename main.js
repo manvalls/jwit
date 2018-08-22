@@ -232,11 +232,41 @@
         children[i].disabled = true;
       }
 
+      children = node.querySelectorAll('[data-wit-hooked]');
+      for(i = 0;i<children.length;i++){
+        beforeUnmount(children[i]);
+      }
+
       if (inclusive) {
+        beforeUnmount(node);
         wit['beforeUnmount']['trigger'](node);
         wit['beforeNodeUnmount']['trigger'](node);
       } else {
         wit['beforeUnmount']['trigger'](node);
+      }
+    }
+
+    function afterChange(node){
+      if (node['__wit_afterAttrChange']) {
+        node['__wit_afterAttrChange']['trigger']();
+      }
+
+      wit['afterAttrChange']['trigger'](node);
+    }
+
+    function beforeUnmount(node){
+      var bu;
+
+      node.removeAttribute('data-wit-hooked');
+      if (node['__wit_beforeNodeUnmount']) {
+        bu = node['__wit_beforeNodeUnmount'];
+
+        clearTimeout(node['__wit_checkTimeout']);
+        delete node['__wit_checkTimeout'];
+        delete node['__wit_afterAttrChange'];
+        delete node['__wit_beforeNodeUnmount'];
+
+        bu['trigger']();
       }
     }
 
@@ -544,7 +574,7 @@
               n.setAttribute(j, a[j]);
             }
 
-            wit['afterAttrChange']['trigger'](n);
+            afterChange(n);
           }
 
           return;
@@ -565,7 +595,7 @@
               n.setAttribute(j, a[j]);
             }
 
-            wit['afterAttrChange']['trigger'](n);
+            afterChange(n);
           }
 
           return;
@@ -577,7 +607,7 @@
               n.removeAttribute(delta[j]);
             }
 
-            wit['afterAttrChange']['trigger'](n);
+            afterChange(n);
           }
 
           return;
@@ -596,7 +626,7 @@
               }
             }
 
-            wit['afterAttrChange']['trigger'](n);
+            afterChange(n);
           }
 
           return;
@@ -608,7 +638,7 @@
               n.style.removeProperty(delta[j]);
             }
 
-            wit['afterAttrChange']['trigger'](n);
+            afterChange(n);
           }
 
           return;
@@ -624,7 +654,7 @@
             }
 
             n.className = buildClass(m);
-            wit['afterAttrChange']['trigger'](n);
+            afterChange(n);
           }
 
           return;
@@ -640,7 +670,7 @@
             }
 
             n.className = buildClass(m);
-            wit['afterAttrChange']['trigger'](n);
+            afterChange(n);
           }
 
           return;
@@ -679,42 +709,21 @@
 
   (function(){
     function hook(node, controller){
-      var beforeNodeUnmount = wit['event']();
-      var afterAttrChange = wit['event']();
-      var beforeNodeUnmountToken, beforeUnmountToken, afterAttrChangeToken, checkTimeout;
+      var beforeNodeUnmount = node['__wit_beforeNodeUnmount'] || wit['event']();
+      var afterAttrChange = node['__wit_afterAttrChange'] || wit['event']();
+      var checkTimeout;
 
-      var cleanup = function(){
-        cleanup = function(){};
-        clearTimeout(checkTimeout);
-        wit['beforeNodeUnmount']['unsubscribe'](beforeNodeUnmountToken);
-        wit['beforeUnmount']['unsubscribe'](beforeUnmountToken);
-        wit['afterAttrChange']['unsubscribe'](afterAttrChangeToken);
-        beforeNodeUnmount['trigger']();
-      };
+      node.setAttribute('data-wit-hooked', '');
+      node['__wit_beforeNodeUnmount'] = beforeNodeUnmount;
+      node['__wit_afterAttrChange'] = afterAttrChange;
 
-      beforeNodeUnmountToken = wit['beforeNodeUnmount']['subscribe'](function(n){
-        if (n === node) {
-          cleanup();
-        }
-      });
-
-      beforeUnmountToken = wit['beforeUnmount']['subscribe'](function(n){
-        if (n.contains(node)) {
-          cleanup();
-        }
-      });
-
-      checkTimeout = setTimeout(function(){
+      node['__wit_checkTimeout'] = setTimeout(function(){
+        delete node['__wit_checkTimeout'];
         if(!node.ownerDocument.contains(node)){
-          cleanup();
+          delete node['__wit_afterAttrChange'];
+          delete node['__wit_beforeNodeUnmount'];
         }
       }, 0);
-
-      afterAttrChangeToken = wit['afterAttrChange']['subscribe'](function(n){
-        if (n === node) {
-          afterAttrChange['trigger']();
-        }
-      });
 
       controller({'beforeNodeUnmount': beforeNodeUnmount, 'afterAttrChange': afterAttrChange});
     }
