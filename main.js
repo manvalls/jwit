@@ -303,7 +303,7 @@
         }
 
         n.parentNode.replaceChild(s, n);
-        if(s.src){
+        if(s.src && !s.defer && !s.async){
           toListen.push(s);
         }
       }
