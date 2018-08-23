@@ -225,6 +225,10 @@
         if(node.tagName == 'LINK' && node.rel == 'stylesheet'){
           node.disabled = true;
         }
+
+        if(node.getAttribute('data-wit-hooked') != null) {
+          beforeUnmount(node);
+        }
       }
 
       children = node.querySelectorAll('link[rel=stylesheet]');
