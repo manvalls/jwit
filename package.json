@@ -13,7 +13,7 @@
     "rollup-plugin-uglify": "^5.0.2"
   },
   "scripts": {
-    "build": "rollup -c rollup.min.config.js && rollup -c rollup.cjs.config.js"
+    "prepare": "rollup -c rollup.min.config.js && rollup -c rollup.cjs.config.js"
   },
   "repository": {
     "type": "git",
