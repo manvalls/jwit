@@ -15,13 +15,15 @@ import {
 } from './types';
 
 function factory(type){
-  var result = [type];
+  return function(){
+    var result = [type];
 
-  for(let i = 0;i < arguments.length;i++) {
-    result.push(arguments[i])
-  }
+    for(let i = 0;i < arguments.length;i++) {
+      result.push(arguments[i])
+    }
 
-  return result;
+    return result;
+  };
 }
 
 export const nil = [0];
