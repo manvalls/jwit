@@ -8,11 +8,9 @@ function event(){
   event.subscribe = callback => {
     var id = nextId++;
     listeners[id] = callback;
-    return id;
-  };
-
-  event.unsubscribe = id => {
-    delete listeners[id];
+    return () => {
+      delete listeners[id];
+    };
   };
 
   event.trigger = () => {
