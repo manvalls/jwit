@@ -15,7 +15,7 @@ function witApply(delta, nodes, rootNode){
     });
 
     if (!delayedDelta) {
-      setTimeout(cb, 0);
+      cb();
     }
   };
 }
