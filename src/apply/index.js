@@ -1,6 +1,7 @@
 import apply from './apply';
 import queue from '../queue';
 import safeRun from '../safeRun';
+import { tick } from '../events';
 
 function witApply(delta, nodes, rootNode){
   rootNode = rootNode || document.documentElement;
@@ -11,9 +12,10 @@ function witApply(delta, nodes, rootNode){
     cb = cb || function(){};
 
     delayedDelta = apply(delta, rootNode, nodes, function(){
-      witApply(delayedDelta, rootNode)(cb);
+      witApply(delayedDelta, nodes, rootNode)(cb);
     });
 
+    tick.trigger(nodes, rootNode);
     if (!delayedDelta) {
       cb();
     }
