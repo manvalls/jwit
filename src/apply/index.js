@@ -1,4 +1,6 @@
 import apply from './apply';
+import queue from '../queue';
+import safeRun from '../safeRun';
 
 function witApply(delta, nodes, rootNode){
   rootNode = rootNode || document.documentElement;
@@ -18,4 +20,15 @@ function witApply(delta, nodes, rootNode){
   };
 }
 
-export default witApply;
+function queuedApply(delta, nodes, rootNode){
+  return cb => {
+    queue(qcb => {
+      witApply(delta, nodes, rootNode)(() => {
+        safeRun(cb);
+        qcb();
+      });
+    });
+  };
+}
+
+export default queuedApply;

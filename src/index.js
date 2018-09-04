@@ -13,4 +13,5 @@ export {
 
 export { fromClass, toClass } from './class';
 export { default as event } from './event';
-export  { default as apply } from './apply/index';
+export { default as apply } from './apply/index';
+export { default as queue } from './queue';
