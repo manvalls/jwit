@@ -3,8 +3,16 @@ import safeRun from './safeRun';
 const queued = [];
 let processing = false;
 
+function finishProcessing(){
+  processing = false;
+  if (queued.length) {
+    queue(queued.shift());
+  }
+}
+
 function queue(thunk){
   var errored = false;
+  var called = false;
 
   if (processing) {
     queued.push(thunk);
@@ -15,13 +23,15 @@ function queue(thunk){
         return;
       }
 
-      processing = false;
-      if (queued.length) {
-        queue(queued.shift());
-      }
+      called = true;
+      finishProcessing();
     }), () => {
-      processing = false;
+      if (called) {
+        return;
+      }
+      
       errored = true;
+      finishProcessing();
     });
   }
 }
