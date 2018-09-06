@@ -16,6 +16,7 @@ function applyContent(delta, rootNode, nodes, cb){
         cbDone = true;
         done++;
         if (waiting && done == total) {
+          waiting = false;
           cb();
         }
       }
