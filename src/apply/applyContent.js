@@ -1,8 +1,9 @@
 import { removeType, clearType } from '../types';
 import getCallbackFactory from '../getCallbackFactory';
+import { destroy, getHooksRunner } from '../hook';
 
 function applyContent(delta, rootNode, nodes, cb){
-  var i,j,n,f,fc;
+  var i,j,n,f,fc,r;
 
   const [getCallback, waiting] = getCallbackFactory(cb);
 
@@ -11,7 +12,9 @@ function applyContent(delta, rootNode, nodes, cb){
     case htmlType:
       for(i = 0;i < nodes.length;i++){
         n = nodes[i];
+        destroy(n);
         n.innerHTML = delta[1];
+        getHooksRunner(n)(getCallback);
       }
 
       break;
@@ -25,12 +28,15 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.parentNode.cloneNode();
         f.innerHTML = delta[1];
+        r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
           n.parentNode.insertBefore(f.childNodes[j], n);
         }
 
+        destroy(n, true);
         n.parentNode.removeChild(n);
+        r(getCallback);
       }
 
       break;
@@ -41,10 +47,13 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.cloneNode();
         f.innerHTML = delta[1];
+        r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
           n.appendChild(f.childNodes[j]);
         }
+
+        r(getCallback);
       }
 
       break;
@@ -56,10 +65,13 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.cloneNode();
         f.innerHTML = delta[1];
+        r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
           n.insertBefore(f.childNodes[j], fc);
         }
+
+        r(getCallback);
       }
 
       break;
@@ -73,10 +85,13 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.parentNode.cloneNode();
         f.innerHTML = delta[1];
+        r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
           n.parentNode.insertBefore(f.childNodes[j], n.nextSibling);
         }
+
+        r(getCallback);
       }
 
       break;
@@ -90,10 +105,13 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.parentNode.cloneNode();
         f.innerHTML = delta[1];
+        r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
           n.parentNode.insertBefore(f.childNodes[j], n);
         }
+        
+        r(getCallback);
       }
 
       break;
