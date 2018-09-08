@@ -20,6 +20,9 @@ export function hook(selector, Controller){
     }
 
     hooks[id] = [selector, Controller];
+    if (Controller.initialHook === false) {
+      return cb();
+    }
 
     const [getCallback, waiting] = getCallbackFactory(cb);
     getHooksRunner(document, {[id]: hooks[id]})(getCallback);
