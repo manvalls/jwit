@@ -2,6 +2,23 @@ import { removeType, clearType } from '../types';
 import getCallbackFactory from '../getCallbackFactory';
 import { destroy, getHooksRunner } from '../hook';
 
+function replaceScripts(container){
+  const scripts = container.querySelectorAll('script');
+  let i,n,s,j,a;
+
+  for(i = 0;i < scripts.length;i++){
+    n = scripts[i];
+    s = document.createElement('script');
+    s.text = n.text;
+    for(j = n.attributes.length-1;j >= 0;j--){
+      a = n.attributes[j];
+      s.setAttribute(a.name, a.value);
+    }
+
+    n.parentNode.replaceChild(s, n);
+  }
+}
+
 function applyContent(delta, rootNode, nodes, cb){
   var i,j,n,f,fc,r;
 
@@ -14,6 +31,7 @@ function applyContent(delta, rootNode, nodes, cb){
         n = nodes[i];
         destroy(n);
         n.innerHTML = delta[1];
+        replaceScripts(n);
         getHooksRunner(n)(getCallback);
       }
 
@@ -28,6 +46,7 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.parentNode.cloneNode();
         f.innerHTML = delta[1];
+        replaceScripts(f);
         r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
@@ -47,6 +66,7 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.cloneNode();
         f.innerHTML = delta[1];
+        replaceScripts(f);
         r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
@@ -65,6 +85,7 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.cloneNode();
         f.innerHTML = delta[1];
+        replaceScripts(f);
         r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
@@ -85,6 +106,7 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.parentNode.cloneNode();
         f.innerHTML = delta[1];
+        replaceScripts(f);
         r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
@@ -105,12 +127,13 @@ function applyContent(delta, rootNode, nodes, cb){
 
         f = n.parentNode.cloneNode();
         f.innerHTML = delta[1];
+        replaceScripts(f);
         r = getHooksRunner(f);
 
         for(j = 0;j < f.childNodes.length;j++){
           n.parentNode.insertBefore(f.childNodes[j], n);
         }
-        
+
         r(getCallback);
       }
 
