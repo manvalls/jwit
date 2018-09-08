@@ -62,7 +62,7 @@ export function getHooksRunner(container, h){
           node.__witControllers.push(ctrl);
 
           if (typeof ctrl.beforeNext == 'function'){
-            safeRun(() => ctrl.beforeNext(getCallback()));
+            safeRun(() => ctrl.beforeNext(getCallback));
           }
         });
       }
