@@ -13,6 +13,9 @@ export default {
       presets: [
         ['@babel/env']
       ],
+      plugins: [
+        ['@babel/plugin-proposal-class-properties']
+      ]
     }),
   ],
 };
