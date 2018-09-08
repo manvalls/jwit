@@ -17,36 +17,27 @@ function attach(node, callback) {
   }
 }
 
-hook('script[src]', class {
+function ScriptHook(node){
+  return {
+    beforeNext: function(getCallback){
+      if (node.async || node.defer) {
+        return;
+      }
 
-  static initialHook = false;
-
-  constructor(node){
-    this.node = node;
-  }
-
-  beforeNext(getCallback){
-    const { node } = this;
-
-    if (node.async || node.defer) {
-      return;
+      attach(node, getCallback());
     }
+  };
+}
 
-    attach(node, getCallback());
-  }
+function LinkHook(node){
+  return {
+    beforeNext: function(getCallback){
+      attach(node, getCallback());
+    }
+  };
+}
 
-});
+ScriptHook.initialHook = LinkHook.initialHook = false;
 
-hook('link[rel=stylesheet][href]', class {
-
-  static initialHook = false;
-
-  constructor(node){
-    this.node = node;
-  }
-
-  beforeNext(getCallback){
-    attach(this.node, getCallback());
-  }
-
-});
+hook('script[src]', ScriptHook);
+hook('link[rel=stylesheet][href]', LinkHook);

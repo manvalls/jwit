@@ -15,9 +15,6 @@ export default {
       exclude: 'node_modules/**',
       presets: [
         ['@babel/env']
-      ],
-      plugins: [
-        ['@babel/plugin-proposal-class-properties']
       ]
     }),
     uglify(),

@@ -22,7 +22,9 @@ function replaceScripts(container){
 function applyContent(delta, rootNode, nodes, cb){
   var i,j,n,f,fc,r;
 
-  const [getCallback, waiting] = getCallbackFactory(cb);
+  const arr = getCallbackFactory(cb);
+  const getCallback = arr[0];
+  const waiting = arr[1];
 
   switch(delta[0]) {
 
