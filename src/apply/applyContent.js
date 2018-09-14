@@ -1,4 +1,8 @@
-import { removeType, clearType } from '../types';
+import {
+  htmlType, replaceType, appendType,
+  prependType, insertAfterType, insertBeforeType,
+} from '../types';
+
 import getCallbackFactory from '../getCallbackFactory';
 import { destroy, getHooksRunner } from '../hook';
 

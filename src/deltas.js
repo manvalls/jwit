@@ -42,6 +42,7 @@ export const nextSibling =    factory(nextSiblingType);
 export const html =           factory(htmlType);
 export const replace =        factory(replaceType);
 export const append =         factory(appendType);
+export const prepend =        factory(prependType);
 export const insertAfter =    factory(insertAfterType);
 export const insertBefore =   factory(insertBeforeType);
 export const addAttr =        factory(addAttrType);

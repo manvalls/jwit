@@ -20,7 +20,7 @@ function getCallbackFactory(cb){
     };
   }
 
-  function waiting(){
+  function checkWaiting(){
     if (total > done) {
       waiting = true;
     }
@@ -28,7 +28,7 @@ function getCallbackFactory(cb){
     return waiting;
   }
 
-  return [getCallback, waiting];
+  return [getCallback, checkWaiting];
 }
 
 export default getCallbackFactory;

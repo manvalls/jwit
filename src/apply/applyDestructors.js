@@ -1,7 +1,7 @@
 import { removeType, clearType } from '../types';
 import { destroy } from '../hook';
 
-function applyDestructors(delta, rootNode, nodes, cb){
+function applyDestructors(delta, rootNode, nodes){
   var i,n;
 
   switch(delta[0]) {

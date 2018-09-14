@@ -4,7 +4,7 @@ export {
   parent, firstChild, lastChild,
   prevSibling, nextSibling,
   html, replace,
-  append, insertAfter,
+  append, prepend, insertAfter,
   insertBefore,
   addAttr, setAttr, rmAttr,
   addStyles, rmStyles,

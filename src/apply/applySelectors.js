@@ -8,6 +8,8 @@ import {
   mapFirstChild, mapLastChild, mapPrevSibling, mapNextSibling,
 } from './utils';
 
+import apply from './apply';
+
 function applyAll(parentDelta, startIndex, rootNode, nodes, cb) {
   var i, d, result;
 

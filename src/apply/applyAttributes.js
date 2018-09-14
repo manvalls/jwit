@@ -6,8 +6,8 @@ import {
 
 import { fromClass, toClass } from '../class'
 
-function applyAttributes(delta, rootNode, nodes, cb){
-  var i,j,n,a,m;
+function applyAttributes(delta, rootNode, nodes){
+  var i,j,n,a,m,at;
 
   switch(delta[0]) {
 

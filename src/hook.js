@@ -56,7 +56,7 @@ export function getHooksRunner(container, h){
       const nodes = container.querySelectorAll(selector);
 
       if (nodes.length) {
-        hooksToRun.push([id, nodes, selector, Controller]);
+        hooksToRun.push([nodes, Controller]);
       }
     });
   }
@@ -64,10 +64,8 @@ export function getHooksRunner(container, h){
   return (getCallback) => {
     for(let i = 0;i < hooksToRun.length;i++) {
       const arr = hooksToRun[i];
-      const id = arr[0];
-      const nodes = arr[1];
-      const selector = arr[2];
-      const Controller = arr[3];
+      const nodes = arr[0];
+      const Controller = arr[1];
 
       for (let j = 0;j < nodes.length;j++) {
         const node = nodes[j];
