@@ -17,24 +17,16 @@ function attach(node, callback) {
   }
 }
 
-function ScriptHook(node){
-  return {
-    beforeNext: function(getCallback){
-      if (node.async || node.defer) {
-        return;
-      }
+function ScriptHook(node, getCallback){
+  if (node.async || node.defer) {
+    return;
+  }
 
-      attach(node, getCallback());
-    }
-  };
+  attach(node, getCallback());
 }
 
-function LinkHook(node){
-  return {
-    beforeNext: function(getCallback){
-      attach(node, getCallback());
-    }
-  };
+function LinkHook(node, getCallback){
+  attach(node, getCallback());
 }
 
 ScriptHook.initialHook = LinkHook.initialHook = false;

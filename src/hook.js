@@ -72,15 +72,11 @@ export function getHooksRunner(container, h){
       for (let j = 0;j < nodes.length;j++) {
         const node = nodes[j];
         safeRun(() => {
-          const ctrl = new Controller(node);
+          const ctrl = new Controller(node, getCallback);
 
           node.setAttribute('wit-controlled', '');
           node.__witControllers = node.__witControllers || [];
           node.__witControllers.push(ctrl);
-
-          if (typeof ctrl.beforeNext == 'function'){
-            safeRun(() => ctrl.beforeNext(getCallback));
-          }
         });
       }
     }
