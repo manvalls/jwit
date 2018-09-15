@@ -41,7 +41,7 @@ function init(){
   finishProcessing();
 }
 
-if (document.readyState == 'complete') {
+if (document.readyState == 'complete' || document.readyState == 'interactive') {
   finishProcessing();
 } else if(window.addEventListener) {
   window.addEventListener('load', init, false);
