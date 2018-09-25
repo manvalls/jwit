@@ -1,6 +1,6 @@
 {
   "name": "jwit",
-  "version": "5.0.2",
+  "version": "5.1.0",
   "description": "JS implementation of wit",
   "main": "./dist/wit.cjs.js",
   "module": "./dist/wit.esm.js",
