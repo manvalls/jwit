@@ -101,6 +101,18 @@ export function getControllersBellow(node){
   return controllers;
 }
 
+export function getControllersAbove(node) {
+  var parent = node.parentNode;
+  var controllers = [];
+
+  while(parent) {
+    controllers = controllers.concat(getControllers(parent));
+    parent = parent.parentNode;
+  }
+
+  return controllers;
+}
+
 export function destroy(node, inclusive) {
   var controllers = getControllersBellow(node);
   var i;
