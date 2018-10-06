@@ -16,6 +16,14 @@ export { default as event } from './event';
 export { default as apply } from './apply/index';
 export { default as queue } from './queue';
 export { tick } from './events';
-export { hook, getControllers, getControllersBellow, getControllersAbove } from './hook';
+
+export {
+  hook,
+  getControllers,
+  getControllersBellow,
+  getControllersAbove,
+  attach,
+  detach,
+} from './hook';
 
 import './defaultHooks';

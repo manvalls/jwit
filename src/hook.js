@@ -70,15 +70,29 @@ export function getHooksRunner(container, h){
       for (let j = 0;j < nodes.length;j++) {
         const node = nodes[j];
         safeRun(() => {
-          const ctrl = new Controller(node, getCallback);
-
-          node.setAttribute('wit-controlled', '');
-          node.__witControllers = node.__witControllers || [];
-          node.__witControllers.push(ctrl);
+          attach(node, new Controller(node, getCallback));
         });
       }
     }
   };
+}
+
+export function attach(node, ctrl){
+  var ctrls;
+
+  node.setAttribute('wit-controlled', '');
+  ctrls = node.__witControllers = node.__witControllers || [];
+  if (ctrls.indexOf(ctrl) == -1) {
+    node.__witControllers.push(ctrl);
+  }
+}
+
+export function detach(node, ctrl) {
+  var ctrls = node.__witControllers || [];
+  var i = ctrls.indexOf(ctrl);
+  if (i != -1) {
+    ctrls.splice(i, 1);
+  }
 }
 
 export function getControllers(node){
