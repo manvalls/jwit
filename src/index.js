@@ -26,4 +26,6 @@ export {
   detach,
 } from './hook';
 
+export { default as getEventTrigger } from './getEventTrigger';
+
 import './defaultHooks';
