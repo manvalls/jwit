@@ -116,12 +116,12 @@ export function getControllersBellow(node){
 }
 
 export function getControllersAbove(node) {
-  var parent = node.parentNode;
+  var parent = node.parentElement;
   var controllers = [];
 
   while(parent) {
     controllers = controllers.concat(getControllers(parent));
-    parent = parent.parentNode;
+    parent = parent.parentElement;
   }
 
   return controllers;
