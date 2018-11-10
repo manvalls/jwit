@@ -80,6 +80,10 @@ export function getHooksRunner(container, h){
 export function attach(node, ctrl){
   var ctrls;
 
+  if (!node) {
+    return;
+  }
+
   node.setAttribute('wit-controlled', '');
   ctrls = node.__witControllers = node.__witControllers || [];
   if (ctrls.indexOf(ctrl) == -1) {
@@ -88,7 +92,7 @@ export function attach(node, ctrl){
 }
 
 export function detach(node, ctrl) {
-  var ctrls = node.__witControllers || [];
+  var ctrls = (node && node.__witControllers) || [];
   var i = ctrls.indexOf(ctrl);
   if (i != -1) {
     ctrls.splice(i, 1);
@@ -96,7 +100,7 @@ export function detach(node, ctrl) {
 }
 
 export function getControllers(node){
-  if (node.hasAttribute('wit-controlled')) {
+  if (node && node.hasAttribute('wit-controlled')) {
     return (node.__witControllers || []).slice();
   }
 
@@ -105,8 +109,13 @@ export function getControllers(node){
 
 export function getControllersBellow(node){
   var controllers = [];
-  var nodes = node.querySelectorAll('wit-controlled');
-  var i;
+  var nodes, i;
+
+  if (!node) {
+    return controllers;
+  }
+
+  nodes = node.querySelectorAll('wit-controlled');
 
   for (i = 0;i < nodes.length;i++) {
     controllers = controllers.concat(getControllers(nodes[i]));
@@ -116,7 +125,7 @@ export function getControllersBellow(node){
 }
 
 export function getControllersAbove(node) {
-  var parent = node.parentElement;
+  var parent = node && node.parentElement;
   var controllers = [];
 
   while(parent) {
