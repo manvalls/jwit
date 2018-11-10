@@ -13,7 +13,7 @@ function event(){
     };
   };
 
-  event.trigger = () => {
+  event.trigger = function(){
     var i;
     for(i in listeners) if(listeners.hasOwnProperty(i)){
       safeRun(() => listeners[i].apply(this, arguments));
