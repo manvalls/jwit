@@ -115,7 +115,7 @@ export function getControllersBellow(node){
     return controllers;
   }
 
-  nodes = node.querySelectorAll('wit-controlled');
+  nodes = node.querySelectorAll('[wit-controlled]');
 
   for (i = 0;i < nodes.length;i++) {
     controllers = controllers.concat(getControllers(nodes[i]));
