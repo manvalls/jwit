@@ -1,10 +1,12 @@
 import {
   htmlType, replaceType, appendType,
   prependType, insertAfterType, insertBeforeType,
+  removeType, clearType,
 } from '../types';
 
 import getCallbackFactory from '../getCallbackFactory';
-import { destroy, getHooksRunner } from '../hook';
+import { getHooksRunner, getControllersBellow, getControllers } from '../hook';
+import safeRun from '../safeRun';
 
 function replaceScripts(container){
   const scripts = container.querySelectorAll('script');
@@ -29,6 +31,20 @@ function applyContent(delta, rootNode, nodes, cb){
   const arr = getCallbackFactory(cb);
   const getCallback = arr[0];
   const waiting = arr[1];
+
+  function destroy(node, inclusive) {
+    var controllers = getControllersBellow(node);
+    var i;
+  
+    if (inclusive) {
+      controllers = controllers.concat(getControllers(node));
+    }
+  
+    for(i = 0;i < controllers.length;i++){
+      let ctrl = controllers[i];
+      if (typeof ctrl.destroy == 'function') safeRun(() => ctrl.destroy(getCallback));
+    }
+  }
 
   switch(delta[0]) {
 
@@ -141,6 +157,26 @@ function applyContent(delta, rootNode, nodes, cb){
         }
 
         r(getCallback);
+      }
+
+      break;
+
+    case removeType:
+      for(i = 0;i < nodes.length;i++){
+        n = nodes[i];
+        if (n.parentNode) {
+          destroy(n, true);
+          n.parentNode.removeChild(n);
+        }
+      }
+
+      break;
+
+    case clearType:
+      for(i = 0;i < nodes.length;i++){
+        n = nodes[i];
+        destroy(n);
+        n.innerHTML = '';
       }
 
       break;

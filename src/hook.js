@@ -135,17 +135,3 @@ export function getControllersAbove(node) {
 
   return controllers;
 }
-
-export function destroy(node, inclusive) {
-  var controllers = getControllersBellow(node);
-  var i;
-
-  if (inclusive) {
-    controllers = controllers.concat(getControllers(node));
-  }
-
-  for(i = 0;i < controllers.length;i++){
-    let ctrl = controllers[i];
-    if (typeof ctrl.destroy == 'function') safeRun(() => ctrl.destroy());
-  }
-}

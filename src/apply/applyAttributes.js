@@ -4,10 +4,17 @@ import {
   rmClassType,
 } from '../types';
 
+import getCallbackFactory from '../getCallbackFactory';
+import { getControllers } from '../hook';
 import { fromClass, toClass } from '../class'
+import safeRun from '../safeRun';
 
-function applyAttributes(delta, rootNode, nodes){
+function applyAttributes(delta, rootNode, nodes, cb){
   var i,j,n,a,m,at;
+
+  const arr = getCallbackFactory(cb);
+  const getCallback = arr[0];
+  const waiting = arr[1];
 
   switch(delta[0]) {
 
@@ -20,7 +27,7 @@ function applyAttributes(delta, rootNode, nodes){
         }
       }
 
-      return;
+      break;
 
     case setAttrType:
       a = delta[1];
@@ -39,7 +46,7 @@ function applyAttributes(delta, rootNode, nodes){
         }
       }
 
-      return;
+      break;
 
     case rmAttrType:
       for(i = 0;i < nodes.length;i++){
@@ -49,7 +56,7 @@ function applyAttributes(delta, rootNode, nodes){
         }
       }
 
-      return;
+      break;
 
     case addStylesType:
       a = delta[1];
@@ -66,7 +73,7 @@ function applyAttributes(delta, rootNode, nodes){
         }
       }
 
-      return;
+      break;
 
     case rmStylesType:
       for(i = 0;i < nodes.length;i++){
@@ -76,7 +83,7 @@ function applyAttributes(delta, rootNode, nodes){
         }
       }
 
-      return;
+      break;
 
     case addClassType:
       a = fromClass(delta[1])
@@ -91,7 +98,7 @@ function applyAttributes(delta, rootNode, nodes){
         n.className = toClass(m);
       }
 
-      return;
+      break;
 
     case rmClassType:
       a = fromClass(delta[1])
@@ -106,8 +113,20 @@ function applyAttributes(delta, rootNode, nodes){
         n.className = toClass(m);
       }
 
-      return;
+      break;
 
+  }
+
+  for(let i = 0;i < nodes.length;i++){
+    const controllers = getControllers(nodes[i]);
+    for(let i = 0;i < controllers.length;i++){
+      const ctrl = controllers[i];
+      if(typeof ctrl.attrChange == 'function') safeRun(() => ctrl.attrChange(getCallback));
+    }
+  }
+
+  if (waiting()) {
+    return [0];
   }
 }
 

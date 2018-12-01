@@ -11,7 +11,6 @@ import {
 } from '../types';
 
 import applySelectors from './applySelectors';
-import applyDestructors from './applyDestructors';
 import applyAttributes from './applyAttributes';
 import applyContent from './applyContent';
 
@@ -32,12 +31,6 @@ function apply(delta, rootNode, nodes, cb) {
     case nextSiblingType:
       return applySelectors(delta, rootNode, nodes, cb);
 
-    // Destructors
-
-    case removeType:
-    case clearType:
-      return applyDestructors(delta, rootNode, nodes, cb);
-
     // Content
 
     case htmlType:
@@ -46,6 +39,8 @@ function apply(delta, rootNode, nodes, cb) {
     case prependType:
     case insertAfterType:
     case insertBeforeType:
+    case removeType:
+    case clearType:
       return applyContent(delta, rootNode, nodes, cb);
 
     // Attributes
