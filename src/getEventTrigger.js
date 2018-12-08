@@ -20,14 +20,10 @@ function getEventTrigger(node, handlerName){
   
   return function(pre, post){
     let propagationStopped = false;
-    let defaultPrevented = false;
 
     const event = {
       stopPropagation: () => {
         propagationStopped = true;
-      },
-      preventDefault: () => {
-        defaultPrevented = true;
       },
     };
 
@@ -35,7 +31,7 @@ function getEventTrigger(node, handlerName){
       for(let i = 0;i < pre.length;i++){
         safeRun(() => pre[i](event));
         if(propagationStopped){
-          return defaultPrevented;
+          return;
         }
       }
     }
@@ -43,14 +39,14 @@ function getEventTrigger(node, handlerName){
     for(let i = 0;i < capturers.length;i++){
       safeRun(() => capturers[i]['capture' + handlerName](event));
       if(propagationStopped){
-        return defaultPrevented;
+        return;
       }
     }
 
     for(let i = 0;i < handlers.length;i++){
       safeRun(() => handlers[i]['on' + handlerName](event));
       if(propagationStopped){
-        return defaultPrevented;
+        return;
       }
     }
 
@@ -58,12 +54,10 @@ function getEventTrigger(node, handlerName){
       for(let i = 0;i < post.length;i++){
         safeRun(() => post[i](event));
         if(propagationStopped){
-          return defaultPrevented;
+          return;
         }
       }
     }
-
-    return defaultPrevented;
   }
 }
 
