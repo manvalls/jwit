@@ -1,11 +1,13 @@
 import safeRun from './safeRun';
 
 const queued = [];
+const tokens = [];
 let processing = true;
 
 function finishProcessing(){
   processing = false;
   if (queued.length) {
+    tokens.shift();
     queue(queued.shift());
   }
 }
@@ -23,11 +25,22 @@ function queue(thunk){
   }
 
   if (processing) {
+    const token = {};
     queued.push(thunk);
-  } else {
-    processing = true;
-    safeRun(() => thunk(whenDone), whenDone);
+    tokens.push(token);
+
+    return () => {
+      const i = tokens.indexOf(token);
+      if (i != -1) {
+        tokens.splice(i, 1);
+        queued.splice(i, 1);
+      }
+    };
   }
+
+  processing = true;
+  safeRun(() => thunk(whenDone), whenDone);
+  return () => {};
 }
 
 function init(){
