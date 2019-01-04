@@ -31,5 +31,20 @@ function LinkHook(node, getCallback){
 
 ScriptHook.initialHook = LinkHook.initialHook = false;
 
-hook('script[src]', ScriptHook);
-hook('link[rel=stylesheet][href]', LinkHook);
+export function hookScripts(){
+  return hook('script[src]', ScriptHook);
+}
+
+export function hookStyleSheets(){
+  return hook('link[rel=stylesheet][href]', LinkHook);
+}
+
+export function hookAssets(){
+  const scriptUnhook = hookScripts();
+  const linkUnhook = hookStyleSheets();
+  return () => {
+    scriptUnhook();
+    linkUnhook();
+  };
+}
+

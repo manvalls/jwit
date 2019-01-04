@@ -14,7 +14,7 @@ export function hook(selector, Controller){
     selector = Controller.selector;
   }
 
-  queue(cb => {
+  const unqueue = queue(cb => {
     if (aborted) {
       return cb();
     }
@@ -38,8 +38,14 @@ export function hook(selector, Controller){
   });
 
   return () => {
+    if (aborted) {
+      return;
+    }
+    
     aborted = true;
     delete hooks[id];
+    unqueue();
+    unqueue = null;
   };
 }
 
