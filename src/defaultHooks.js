@@ -31,11 +31,23 @@ function LinkHook(node, getCallback){
 
 ScriptHook.initialHook = LinkHook.initialHook = false;
 
+let scriptsHooked = false;
 export function hookScripts(){
+  if (scriptsHooked) {
+    return () => {};
+  }
+
+  scriptsHooked = true;
   return hook('script[src]', ScriptHook);
 }
 
+let styleSheetsHooked = false;
 export function hookStyleSheets(){
+  if (styleSheetsHooked) {
+    return () => {};
+  }
+
+  styleSheetsHooked = true;
   return hook('link[rel=stylesheet][href]', LinkHook);
 }
 
