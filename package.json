@@ -2,6 +2,7 @@
   "name": "jwit",
   "version": "7.0.0",
   "description": "JS implementation of wit",
+  "sideEffects": false,
   "main": "./dist/wit.cjs.js",
   "module": "./dist/wit.esm.js",
   "dependencies": {},

@@ -54,13 +54,15 @@ function init(){
   finishProcessing();
 }
 
-if (document.readyState == 'complete' || document.readyState == 'interactive') {
-  finishProcessing();
-} else if(window.addEventListener) {
-  window.addEventListener('load', init, false);
-  document.addEventListener('DOMContentLoaded', init, false);
-} else if(window.attachEvent) {
-  window.attachEvent('onload', init);
+export function initQueue(){
+  if (document.readyState == 'complete' || document.readyState == 'interactive') {
+    finishProcessing();
+  } else if(window.addEventListener) {
+    window.addEventListener('load', init, false);
+    document.addEventListener('DOMContentLoaded', init, false);
+  } else if(window.attachEvent) {
+    window.attachEvent('onload', init);
+  }
 }
 
 export default queue;

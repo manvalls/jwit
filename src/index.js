@@ -14,7 +14,7 @@ export {
 export { fromClass, toClass } from './class';
 export { default as event } from './event';
 export { default as apply } from './apply/index';
-export { default as queue } from './queue';
+export { default as queue, initQueue } from './queue';
 export { tick } from './events';
 
 export {
@@ -29,3 +29,4 @@ export {
 export { default as getEventTrigger } from './getEventTrigger';
 
 export { hookScripts, hookStyleSheets, hookAssets } from './defaultHooks';
+export { default as init } from './init';
