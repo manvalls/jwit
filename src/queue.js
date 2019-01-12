@@ -54,7 +54,14 @@ function init(){
   finishProcessing();
 }
 
+let inited = false;
 export function initQueue(){
+  if (inited) {
+    return () => {};
+  }
+
+  inited = true;
+
   if (document.readyState == 'complete' || document.readyState == 'interactive') {
     finishProcessing();
   } else if(window.addEventListener) {
@@ -63,6 +70,8 @@ export function initQueue(){
   } else if(window.attachEvent) {
     window.attachEvent('onload', init);
   }
+
+  return () => {};
 }
 
 export default queue;

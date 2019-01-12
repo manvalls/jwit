@@ -30,3 +30,5 @@ export { default as getEventTrigger } from './getEventTrigger';
 
 export { hookScripts, hookStyleSheets, hookAssets } from './defaultHooks';
 export { default as init } from './init';
+
+export { default as wrapFactory } from './wrapFactory';

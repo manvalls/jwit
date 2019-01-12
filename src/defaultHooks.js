@@ -1,4 +1,5 @@
 import { hook } from './hook';
+import wrapFactory from './wrapFactory';
 
 function attach(node, callback) {
   if (node.addEventListener) {
@@ -31,32 +32,16 @@ function LinkHook(node, getCallback){
 
 ScriptHook.initialHook = LinkHook.initialHook = false;
 
-let scriptsHooked = false;
-export function hookScripts(){
-  if (scriptsHooked) {
-    return () => {};
-  }
+export const hookScripts = wrapFactory(() => [
+  hook('script[src]', ScriptHook),
+]);
 
-  scriptsHooked = true;
-  return hook('script[src]', ScriptHook);
-}
+export const hookStyleSheets = wrapFactory(() => [
+  hook('link[rel=stylesheet][href]', LinkHook),
+])
 
-let styleSheetsHooked = false;
-export function hookStyleSheets(){
-  if (styleSheetsHooked) {
-    return () => {};
-  }
-
-  styleSheetsHooked = true;
-  return hook('link[rel=stylesheet][href]', LinkHook);
-}
-
-export function hookAssets(){
-  const scriptUnhook = hookScripts();
-  const linkUnhook = hookStyleSheets();
-  return () => {
-    scriptUnhook();
-    linkUnhook();
-  };
-}
+export const hookAssets = wrapFactory(() => [
+  hookScripts(),
+  hookStyleSheets(),
+])
 
