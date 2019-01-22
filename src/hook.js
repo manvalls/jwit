@@ -49,6 +49,12 @@ export function hook(selector, Controller){
   };
 }
 
+function parentLevels(node){
+  let n = 0;
+  while(node = node.parentNode) n++;
+  return n;
+}
+
 export function getHooksRunner(container, h){
   const hooksToRun = [];
   h = h || hooks;
@@ -60,25 +66,23 @@ export function getHooksRunner(container, h){
       const Controller = arr[1];
 
       const nodes = container.querySelectorAll(selector);
-
-      if (nodes.length) {
-        hooksToRun.push([nodes, Controller]);
+      for(let i = 0;i < nodes.length;i++){
+        hooksToRun.push([nodes[i], parentLevels(nodes[i]), Controller]);
       }
     });
   }
 
+  hooksToRun.sort((a, b) => a[1] - b[1]).sort((a, b) => (b[2].priority || 0) - (a[2].priority || 0));
+
   return (getCallback) => {
     for(let i = 0;i < hooksToRun.length;i++) {
       const arr = hooksToRun[i];
-      const nodes = arr[0];
-      const Controller = arr[1];
-
-      for (let j = 0;j < nodes.length;j++) {
-        const node = nodes[j];
-        safeRun(() => {
-          attach(node, new Controller(node, getCallback));
-        });
-      }
+      const node = arr[0];
+      const Controller = arr[2];
+      
+      safeRun(() => {
+        attach(node, new Controller(node, getCallback));
+      });
     }
   };
 }
