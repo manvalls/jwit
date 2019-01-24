@@ -24,6 +24,12 @@ export {
   getControllersAbove,
   attach,
   detach,
+  parent,
+  child,
+  local,
+  parents,
+  children,
+  locals,
 } from './hook';
 
 export { default as getEventTrigger } from './getEventTrigger';

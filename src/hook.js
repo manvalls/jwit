@@ -145,3 +145,47 @@ export function getControllersAbove(node) {
 
   return controllers;
 }
+
+function getFirst(controllers, key){
+  for(let i = 0;i < controllers.length;i++){
+    if (controllers[i].key === key) {
+      return controllers[i];
+    } 
+  }
+}
+
+function getAll(controllers, key){
+  const result = [];
+
+  for(let i = 0;i < controllers.length;i++){
+    if (controllers[i].key === key) {
+      result.push(controllers[i]);
+    }
+  }
+
+  return result;
+}
+
+export function parent(node, key){
+  return getFirst(getControllersAbove(node), key)
+}
+
+export function child(node, key){
+  return getFirst(getControllersBellow(node), key)
+}
+
+export function local(node, key){
+  return getFirst(getControllers(node), key)
+}
+
+export function parents(node, key){
+  return getAll(getControllersAbove(node), key)
+}
+
+export function children(node, key){
+  return getAll(getControllersBellow(node), key)
+}
+
+export function locals(node, key){
+  return getAll(getControllers(node), key)
+}
