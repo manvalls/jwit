@@ -146,6 +146,28 @@ export function getControllersAbove(node) {
   return controllers;
 }
 
+function destroyInternal(node, inclusive, getCallback) {
+  var controllers = getControllersBellow(node);
+  var i;
+
+  if (inclusive) {
+    controllers = controllers.concat(getControllers(node));
+  }
+
+  for(i = 0;i < controllers.length;i++){
+    let ctrl = controllers[i];
+    if (typeof ctrl.destroy == 'function') safeRun(() => ctrl.destroy(getCallback || (() => () => {})));
+  }
+}
+
+export function destroyChildren(node, getCallback){
+  destroyInternal(node, false, getCallback)
+}
+
+export function destroy(node, getCallback){
+  destroyInternal(node, true, getCallback)
+}
+
 function getFirst(controllers, key){
   for(let i = 0;i < controllers.length;i++){
     if (controllers[i].key === key) {
@@ -156,9 +178,16 @@ function getFirst(controllers, key){
 
 function getAll(controllers, key){
   const result = [];
+  let check;
+
+  if (typeof key == 'function'){
+    check = key;
+  } else {
+    check = ctrl => ctrl.key === key;
+  }
 
   for(let i = 0;i < controllers.length;i++){
-    if (controllers[i].key === key) {
+    if (check(controllers[i])) {
       result.push(controllers[i]);
     }
   }
@@ -166,26 +195,26 @@ function getAll(controllers, key){
   return result;
 }
 
-export function parent(node, key){
+export function getParent(node, key){
   return getFirst(getControllersAbove(node), key)
 }
 
-export function child(node, key){
+export function getChild(node, key){
   return getFirst(getControllersBellow(node), key)
 }
 
-export function local(node, key){
+export function getLocal(node, key){
   return getFirst(getControllers(node), key)
 }
 
-export function parents(node, key){
+export function getParents(node, key){
   return getAll(getControllersAbove(node), key)
 }
 
-export function children(node, key){
+export function getChildren(node, key){
   return getAll(getControllersBellow(node), key)
 }
 
-export function locals(node, key){
+export function getLocals(node, key){
   return getAll(getControllers(node), key)
 }

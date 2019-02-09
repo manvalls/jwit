@@ -5,8 +5,7 @@ import {
 } from '../types';
 
 import getCallbackFactory from '../getCallbackFactory';
-import { getHooksRunner, getControllersBellow, getControllers } from '../hook';
-import safeRun from '../safeRun';
+import { getHooksRunner, destroy, destroyChildren } from '../hook';
 
 function replaceScripts(container){
   const scripts = container.querySelectorAll('script');
@@ -32,26 +31,12 @@ function applyContent(delta, rootNode, nodes, cb){
   const getCallback = arr[0];
   const waiting = arr[1];
 
-  function destroy(node, inclusive) {
-    var controllers = getControllersBellow(node);
-    var i;
-  
-    if (inclusive) {
-      controllers = controllers.concat(getControllers(node));
-    }
-  
-    for(i = 0;i < controllers.length;i++){
-      let ctrl = controllers[i];
-      if (typeof ctrl.destroy == 'function') safeRun(() => ctrl.destroy(getCallback));
-    }
-  }
-
   switch(delta[0]) {
 
     case htmlType:
       for(i = 0;i < nodes.length;i++){
         n = nodes[i];
-        destroy(n);
+        destroyChildren(n, getCallback);
         n.innerHTML = delta[1];
         replaceScripts(n);
         getHooksRunner(n)(getCallback);
@@ -75,7 +60,7 @@ function applyContent(delta, rootNode, nodes, cb){
           n.parentNode.insertBefore(f.childNodes[j], n);
         }
 
-        destroy(n, true);
+        destroy(n, getCallback);
         n.parentNode.removeChild(n);
         r(getCallback);
       }
@@ -165,7 +150,7 @@ function applyContent(delta, rootNode, nodes, cb){
       for(i = 0;i < nodes.length;i++){
         n = nodes[i];
         if (n.parentNode) {
-          destroy(n, true);
+          destroy(n, getCallback);
           n.parentNode.removeChild(n);
         }
       }
@@ -175,7 +160,7 @@ function applyContent(delta, rootNode, nodes, cb){
     case clearType:
       for(i = 0;i < nodes.length;i++){
         n = nodes[i];
-        destroy(n);
+        destroyChildren(n, getCallback);
         n.innerHTML = '';
       }
 
