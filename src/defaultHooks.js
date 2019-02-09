@@ -2,7 +2,7 @@ import { hook } from './hook';
 import wrapFactory from './wrapFactory';
 
 function attach(node, callback) {
-  if (node.addEventListener) {
+  if (('onload' in node) && node.addEventListener) {
     node.addEventListener('load', callback, false);
     node.addEventListener('error', callback, false);
   } else if (node.attachEvent) {
