@@ -1,6 +1,6 @@
 {
   "name": "jwit",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "JS implementation of wit",
   "sideEffects": false,
   "main": "./dist/wit.cjs.js",
