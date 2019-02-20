@@ -9,6 +9,13 @@ import { getControllers } from '../hook';
 import { fromClass, toClass } from '../class'
 import safeRun from '../safeRun';
 
+function setAttribute(node, key, value){
+  node.setAttribute(key, value);
+  if (key == 'value' && node.tagName.toLowerCase() == 'input') {
+    node.value = value;
+  }
+}
+
 function applyAttributes(delta, rootNode, nodes, cb){
   var i,j,n,a,m,at;
 
@@ -23,7 +30,7 @@ function applyAttributes(delta, rootNode, nodes, cb){
       for(i = 0;i < nodes.length;i++){
         n = nodes[i];
         for(j in a) if(a.hasOwnProperty(j)) {
-          n.setAttribute(j, a[j]);
+          setAttribute(n, j, a[j]);
         }
       }
 
@@ -42,7 +49,7 @@ function applyAttributes(delta, rootNode, nodes, cb){
         }
 
         for(j in a) if(a.hasOwnProperty(j)) {
-          n.setAttribute(j, a[j]);
+          setAttribute(n, j, a[j]);
         }
       }
 
