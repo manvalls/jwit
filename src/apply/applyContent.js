@@ -25,7 +25,7 @@ function replaceScripts(container){
 }
 
 function applyContent(delta, rootNode, nodes, cb){
-  var i,j,n,f,fc,r;
+  var i,n,f,fc,r;
 
   const arr = getCallbackFactory(cb);
   const getCallback = arr[0];
@@ -56,8 +56,8 @@ function applyContent(delta, rootNode, nodes, cb){
         replaceScripts(f);
         r = getHooksRunner(f);
 
-        for(j = 0;j < f.childNodes.length;j++){
-          n.parentNode.insertBefore(f.childNodes[j], n);
+        while(f.childNodes[0]){
+          n.parentNode.insertBefore(f.childNodes[0], n);
         }
 
         destroy(n, getCallback);
@@ -76,8 +76,8 @@ function applyContent(delta, rootNode, nodes, cb){
         replaceScripts(f);
         r = getHooksRunner(f);
 
-        for(j = 0;j < f.childNodes.length;j++){
-          n.appendChild(f.childNodes[j]);
+        while(f.childNodes[0]){
+          n.appendChild(f.childNodes[0]);
         }
 
         r(getCallback);
@@ -95,8 +95,8 @@ function applyContent(delta, rootNode, nodes, cb){
         replaceScripts(f);
         r = getHooksRunner(f);
 
-        for(j = 0;j < f.childNodes.length;j++){
-          n.insertBefore(f.childNodes[j], fc);
+        while(f.childNodes[0]){
+          n.insertBefore(f.childNodes[0], fc);
         }
 
         r(getCallback);
@@ -116,8 +116,8 @@ function applyContent(delta, rootNode, nodes, cb){
         replaceScripts(f);
         r = getHooksRunner(f);
 
-        for(j = 0;j < f.childNodes.length;j++){
-          n.parentNode.insertBefore(f.childNodes[j], n.nextSibling);
+        while(f.childNodes[0]){
+          n.parentNode.insertBefore(f.childNodes[0], n.nextSibling);
         }
 
         r(getCallback);
@@ -137,8 +137,8 @@ function applyContent(delta, rootNode, nodes, cb){
         replaceScripts(f);
         r = getHooksRunner(f);
 
-        for(j = 0;j < f.childNodes.length;j++){
-          n.parentNode.insertBefore(f.childNodes[j], n);
+        while(f.childNodes[0]){
+          n.parentNode.insertBefore(f.childNodes[0], n);
         }
 
         r(getCallback);
