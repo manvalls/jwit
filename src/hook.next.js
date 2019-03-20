@@ -145,6 +145,7 @@ function checkHooksInternal(container, getCallback, hooks){
 // - h.getParents
 // - h.getChildren
 // - h.getLocals
+// - improved resource loading strategy
 
 // For internal usage
 export function checkHooks(container, getCallback){
