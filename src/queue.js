@@ -1,4 +1,4 @@
-import safeRun from './safeRun';
+import schedule from './schedule';
 
 const queued = [];
 const tokens = [];
@@ -39,7 +39,7 @@ function queue(thunk){
   }
 
   processing = true;
-  safeRun(() => thunk(whenDone), whenDone);
+  schedule(() => thunk(whenDone), whenDone);
   return () => {};
 }
 
