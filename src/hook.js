@@ -1,6 +1,6 @@
 import safeRun from './safeRun';
 import queue from './queue';
-import getCallbackFactory from './getCallbackFactory';
+import callbackGroup from './callbackGroup';
 
 const hooks = {};
 let nextId = 0;
@@ -24,17 +24,12 @@ export function hook(selector, Controller){
       return cb();
     }
 
-    const arr = getCallbackFactory(cb);
-    const getCallback = arr[0];
-    const waiting = arr[1];
+    const cg = callbackGroup(cb)
 
     const h = {};
     h[id] = hooks[id];
 
-    getHooksRunner(document, h)(getCallback);
-    if (!waiting()) {
-      cb();
-    }
+    getHooksRunner(document, h)(cg);
   });
 
   return () => {
