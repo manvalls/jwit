@@ -1,4 +1,8 @@
 function safeRun(cb, fb){
+  if (!cb) {
+    return
+  }
+  
   try{
     return cb();
   }catch(err){

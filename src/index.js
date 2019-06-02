@@ -15,28 +15,30 @@ export { fromClass, toClass } from './class';
 export { default as event } from './event';
 export { default as apply } from './apply/index';
 export { default as queue, initQueue } from './queue';
-export { tick } from './events';
 
 export {
   hook,
-  getControllers,
-  getControllersBellow,
+  getController,
+  getControllerBelow,
+  getControllerAbove,
+  getControllersBelow,
   getControllersAbove,
-  attach,
-  detach,
-  getParent,
-  getChild,
-  getLocal,
-  getParents,
-  getChildren,
-  getLocals,
-  destroy,
-  destroyChildren,
+  getAllControllers,
+  getAllControllersBelow,
+  getAllControllersAbove,
+  destroyNode,
+  destroyController,
+  destroyControllerBelow,
+  destroyControllerAbove,
+  destroyControllersBelow,
+  destroyControllersAbove,
+  destroyAllControllers,
+  destroyAllControllersBelow,
 } from './hook';
 
 export { default as getEventTrigger } from './getEventTrigger';
 
-export { hookScripts, hookStyleSheets, hookAssets } from './defaultHooks';
+export { ScriptHook, LinkHook } from './defaultHooks';
 export { default as init } from './init';
-
-export { default as wrapFactory } from './wrapFactory';
+export { default as values } from './values';
+export { default as empty } from './empty';

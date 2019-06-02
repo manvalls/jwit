@@ -57,7 +57,7 @@ function init(){
 let inited = false;
 export function initQueue(){
   if (inited) {
-    return () => {};
+    return
   }
 
   inited = true;
@@ -70,8 +70,6 @@ export function initQueue(){
   } else if(window.attachEvent) {
     window.attachEvent('onload', init);
   }
-
-  return () => {};
 }
 
 export default queue;

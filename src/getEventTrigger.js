@@ -1,8 +1,8 @@
-import { getControllersAbove, getControllers } from './hook';
+import { getAllControllersAbove, getAllControllers } from './hook';
 import safeRun from './safeRun';
 
 function getEventTrigger(node, handlerName){
-  const controllers = getControllers(node).concat(getControllersAbove(node));
+  const controllers = getAllControllers(node).concat(getAllControllersAbove(node));
   const capturers = [];
   const handlers = [];
 

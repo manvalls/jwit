@@ -1,215 +1,333 @@
-import safeRun from './safeRun';
-import queue from './queue';
-import callbackGroup from './callbackGroup';
+import empty from './empty'
+import queue from './queue'
+import callbackGroup from './callbackGroup'
+import safeRun from './safeRun'
+import schedule from './schedule'
+import values from './values'
 
-const hooks = {};
-let nextId = 0;
+let nextId = 0
 
-export function hook(selector, Controller){
-  const id = nextId++;
-  let aborted = false;
+const hooks = {}
+const elementHooks = {}
+const attributeHooks = {}
 
-  if (typeof selector == 'function') {
-    Controller = selector;
-    selector = Controller.selector;
+function toArray(array) {
+  if (array && array instanceof Array) {
+    return array
   }
 
-  const unqueue = queue(cb => {
-    if (aborted) {
-      return cb();
-    }
+  return []
+}
 
-    hooks[id] = [selector, Controller];
-    if (Controller.initialHook === false) {
-      return cb();
-    }
+function addToMap(list, map, Controller) {
+  for (const elem of toArray(list)) {
+    map[elem] = map[elem] || {}
+    map[elem][Controller.__witHookId] = Controller
+  }
+}
 
+function removeFromMap(list, map, Controller) {
+  for (const elem of toArray(list)) {
+    if(map[elem]) {
+      delete map[elem][Controller.__witHookId]
+      if (empty(map[elem])) {
+        delete map[elem]
+      }
+    }
+  }
+}
+
+function addHooks(cmap, hooksToRun) {
+  if (cmap) {
+    for (const key of cmap) if (cmap.hasOwnProperty(key)) {
+      hooksToRun[key] = cmap[key]
+    }
+  }
+}
+
+export function hook(Controller, cb){
+  if (hooks[Controller.__witHookId]) {
+    return
+  }
+
+  if (!Controller.__witHookId) {
+    Controller.__witHookId = nextId.toString(36)
+    nextId = (nextId + 1) % 1e15
+  }
+
+  hooks[Controller.__witHookId] = Controller
+  addToMap(Controller.elements, elementHooks, Controller)
+  addToMap(Controller.attributes, attributeHooks, Controller)
+
+  if (Controller.init !== false) {
+    queue(qcb => {
+      const cg = callbackGroup(() => {
+        safeRun(cb)
+        qcb()
+      })
+
+      const matchingElements = document.querySelectorAll([
+        ...(Controller.elements || []),
+        ...(Controller.attributes || []).map(attr => `[${attr}]`)
+      ].join(', '))
+
+      for (const elem of matchingElements) {
+        runHooks(elem, [Controller], cg())
+      }
+    })
+  } else {
+    schedule(cb)
+  }
+}
+
+export function unhook(Controller) {
+  delete hooks[Controller.__witHookId]
+  removeFromMap(Controller.elements, elementHooks, Controller)
+  removeFromMap(Controller.attributes, attributeHooks, Controller)
+}
+
+export function getHooksToRun(element) {
+  const hooksToRun = {}
+
+  addHooks(elementHooks[element.tagName.toLowerCase()], hooksToRun)
+  for (const attr of element.attributes) {
+    addHooks(attributeHooks[attr.name], hooksToRun)
+  }
+
+  return values(hooksToRun).sort((a, b) => (b.priority || 0) - (a.priority || 0))
+}
+
+export function mapNode(element, hooks) {
+  for (const Controller of hooks) {
+    if (typeof Controller.mapNode == 'function') {
+      safeRun(() => {
+        element = Controller.mapNode(element)
+      })
+    }
+  }
+
+  return element
+}
+
+export function runHooks(node, hooks, cb) {
+  const blockingCallback = callbackGroup(cb)
+  
+  for (const Controller of hooks) {
+    const id = Controller.__witHookId
+
+    safeRun(() => {
+      const ctrl = new Controller({
+        node,
+        blockingCallback,
+      })
+
+      const prevAttr = node.getAttribute('wit-ctrl')
+
+      if (prevAttr) {
+        node.setAttribute('wit-ctrl', prevAttr + ' ' + id)
+        node.__witControllers[id] = [ctrl, Controller]
+      } else {
+        node.setAttribute('wit-ctrl', id)
+        node.__witControllers = {[id]: [ctrl, Controller]}
+      }
+    })
+  }
+}
+
+function destroyControllerInternal(node, Controller, cb) {
+  const id = Controller.__witHookId
+  if (!(node.__witControllers && node.__witControllers[id])) {
+    schedule(cb)
+    return
+  }
+
+  const [ctrl] = node.__witControllers[id]
+  const newAttr = node.getAttribute('wit-ctrl').replace(new RegExp(`(^| )${id}($| )`, 'g'), ' ').replace(/(^\s*)|(\s*$)/g, '')
+
+  if (newAttr) {
+    node.setAttribute('wit-ctrl', newAttr)
+    delete node.__witControllers[id]
+  } else {
+    node.removeAttribute('wit-ctrl')
+    delete node.__witControllers
+  }
+
+  if (typeof ctrl.onDestroy == 'function') {
+    schedule(() => {
+      ctrl.onDestroy({ blockingCallback: callbackGroup(cb) })
+    })
+  } else {
+    schedule(cb)
+  }
+}
+
+export function destroyController(node, Controller, cb) {
+  schedule(() => {
+    destroyControllerInternal(node, Controller, cb)
+  })
+}
+
+export function destroyControllerAbove(element, Controller, cb) {
+  while(element = element.parentNode) {
+    const ctrl = getController(element, Controller)
+    if (ctrl) {
+      destroyController(element, Controller, cb)
+      return
+    }
+  }
+}
+
+export function destroyControllersAbove(element, Controller, cb) {
+  schedule(() => {
     const cg = callbackGroup(cb)
 
-    const h = {};
-    h[id] = hooks[id];
+    while(element = element.parentNode) {
+      const ctrl = getController(element, Controller)
+      if (ctrl) {
+        destroyController(element, Controller, cg())
+      }
+    }
+  })
+}
 
-    getHooksRunner(document, h)(cg);
-  });
+export function destroyControllerBelow(node, Controller, cb) {
+  const foundNode = node.querySelector(`[wit-ctrl~=${Controller.__witHookId}]`)
+  destroyController(foundNode, Controller, cb)
+}
 
-  return () => {
-    if (aborted) {
-      return;
+export function destroyControllersBelow(node, Controller, cb) {
+  schedule(() => {
+    const cg = callbackGroup(cb)
+    const foundNodes = node.querySelectorAll(`[wit-ctrl~=${Controller.__witHookId}]`)
+
+    for (const node of foundNodes) {
+      destroyControllerInternal(node, Controller, cg())
+    }
+  })
+}
+
+export function destroyAllControllers(element, cb) {
+  schedule(() => {
+    const cg = callbackGroup(cb)
+
+    for (const [, Controller] of values(element.__witControllers || {})) {
+      destroyControllerInternal(element, Controller, cg())
+    }
+  })
+}
+
+export function destroyAllControllersBelow(element, cb) {
+  schedule(() => {
+    const cg = callbackGroup(cb)
+    const foundNodes = element.querySelectorAll('[wit-ctrl]')
+
+    for (const node of foundNodes) {
+      destroyAllControllers(node, cg())
+    }
+  })
+}
+
+export function destroyNode(element, cb) {
+  const cg = callbackGroup(cb)
+  destroyAllControllers(element, cg())
+  destroyAllControllersBelow(element, cg())
+}
+
+export function processAttrChange(element, cb) {
+  schedule(() => {
+    const cg = callbackGroup(cb)
+    const tagName = element.tagName.toLowerCase()
+
+    const attrs = {}
+    for (const attr of element.attributes) {
+      attrs[attr.name] = true
     }
     
-    aborted = true;
-    delete hooks[id];
-    unqueue();
-    unqueue = null;
-  };
-}
-
-function parentLevels(node){
-  let n = 0;
-  while(node = node.parentNode) n++;
-  return n;
-}
-
-export function getHooksRunner(container, h){
-  const hooksToRun = [];
-  h = h || hooks;
-
-  for(let id in h) if(h.hasOwnProperty(id)){
-    safeRun(() => {
-      const arr = h[id];
-      const selector = arr[0];
-      const Controller = arr[1];
-
-      const nodes = container.querySelectorAll(selector);
-      for(let i = 0;i < nodes.length;i++){
-        hooksToRun.push([nodes[i], parentLevels(nodes[i]), Controller]);
+    for (const [ctrl, Controller] of values(element.__witControllers || {})) {
+      if (typeof ctrl.onAttrChange == 'function') {
+        schedule(() => {
+          ctrl.onAttrChange({ blockingCallback: cg })
+        })
       }
-    });
-  }
 
-  hooksToRun.sort((a, b) => a[1] - b[1]).sort((a, b) => (b[2].priority || 0) - (a[2].priority || 0));
+      if (toArray(Controller.elements).indexOf(tagName) != -1) {
+        continue
+      }
 
-  return (getCallback) => {
-    for(let i = 0;i < hooksToRun.length;i++) {
-      const arr = hooksToRun[i];
-      const node = arr[0];
-      const Controller = arr[2];
-      
-      safeRun(() => {
-        attach(node, new Controller(node, getCallback));
-      });
+      for (const attr of toArray(Controller.attributes)) {
+        if (attrs[attr]) {
+          continue
+        }
+      }
+
+      destroyControllerInternal(element, Controller, cg())
     }
-  };
+  })
 }
 
-export function attach(node, ctrl){
-  var ctrls;
-
-  if (!node) {
-    return;
-  }
-
-  node.setAttribute('wit-controlled', '');
-  ctrls = node.__witControllers = node.__witControllers || [];
-  if (ctrls.indexOf(ctrl) == -1) {
-    node.__witControllers.push(ctrl);
-  }
+export function getController(element, Controller) {
+  return ((element && element.__witControllers) || {})[Controller.__witHookId]
 }
 
-export function detach(node, ctrl) {
-  var ctrls = (node && node.__witControllers) || [];
-  var i = ctrls.indexOf(ctrl);
-  if (i != -1) {
-    ctrls.splice(i, 1);
+export function getControllerAbove(element, Controller) {
+  while(element = element.parentNode) {
+    const ctrl = getController(element, Controller)
+    if (ctrl) {
+      return ctrl
+    }
   }
 }
 
-export function getControllers(node){
-  if (node && node.hasAttribute('wit-controlled')) {
-    return (node.__witControllers || []).slice();
-  }
-
-  return [];
+export function getControllerBelow(element, Controller) {
+  const foundNode = element.querySelector(`[wit-ctrl~=${Controller.__witHookId}]`)
+  return getController(foundNode, Controller)
 }
 
-export function getControllersBellow(node){
-  var controllers = [];
-  var nodes, i;
+export function getControllersAbove(element, Controller) {
+  const controllers = []
 
-  if (!node) {
-    return controllers;
-  }
-
-  nodes = node.querySelectorAll('[wit-controlled]');
-
-  for (i = 0;i < nodes.length;i++) {
-    controllers = controllers.concat(getControllers(nodes[i]));
-  }
-
-  return controllers;
-}
-
-export function getControllersAbove(node) {
-  var parent = node && node.parentElement;
-  var controllers = [];
-
-  while(parent) {
-    controllers = controllers.concat(getControllers(parent));
-    parent = parent.parentElement;
-  }
-
-  return controllers;
-}
-
-function destroyInternal(node, inclusive, getCallback) {
-  var controllers = getControllersBellow(node);
-  var i;
-
-  if (inclusive) {
-    controllers = controllers.concat(getControllers(node));
-  }
-
-  for(i = 0;i < controllers.length;i++){
-    let ctrl = controllers[i];
-    if (typeof ctrl.destroy == 'function') safeRun(() => ctrl.destroy(getCallback || (() => () => {})));
-  }
-}
-
-export function destroyChildren(node, getCallback){
-  destroyInternal(node, false, getCallback)
-}
-
-export function destroy(node, getCallback){
-  destroyInternal(node, true, getCallback)
-}
-
-function getFirst(controllers, key){
-  for(let i = 0;i < controllers.length;i++){
-    if (controllers[i].key === key) {
-      return controllers[i];
-    } 
-  }
-}
-
-function getAll(controllers, key){
-  const result = [];
-  let check;
-
-  if (typeof key == 'function'){
-    check = key;
-  } else {
-    check = ctrl => ctrl.key === key;
-  }
-
-  for(let i = 0;i < controllers.length;i++){
-    if (check(controllers[i])) {
-      result.push(controllers[i]);
+  while(element = element.parentNode) {
+    const ctrl = getController(element, Controller)
+    if (ctrl) {
+      controllers.push(ctrl)
     }
   }
 
-  return result;
+  return controllers
 }
 
-export function getParent(node, key){
-  return getFirst(getControllersAbove(node), key)
+export function getControllersBelow(element, Controller) {
+  const foundNodes = element.querySelectorAll(`[wit-ctrl~=${Controller.__witHookId}]`)
+  const controllers = []
+
+  for (const node of foundNodes) {
+    controllers.push(getController(node, Controller))
+  }
+
+  return controllers
 }
 
-export function getChild(node, key){
-  return getFirst(getControllersBellow(node), key)
+export function getAllControllers(element) {
+  return values(element.__witControllers || {}).map(([ctrl]) => ctrl)
 }
 
-export function getLocal(node, key){
-  return getFirst(getControllers(node), key)
+export function getAllControllersAbove(element) {
+  const controllers = []
+
+  while(element = element.parentNode) {
+    controllers = controllers.concat(getAllControllers(element))
+  }
+
+  return controllers
 }
 
-export function getParents(node, key){
-  return getAll(getControllersAbove(node), key)
-}
+export function getAllControllersBelow(element) {
+  const foundNodes = element.querySelectorAll('[wit-ctrl]')
+  const controllers = []
 
-export function getChildren(node, key){
-  return getAll(getControllersBellow(node), key)
-}
+  for(const node of foundNodes) {
+    controllers = controllers.concat(getAllControllers(node))
+  }
 
-export function getLocals(node, key){
-  return getAll(getControllers(node), key)
+  return controllers
 }

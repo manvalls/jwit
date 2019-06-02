@@ -1,8 +1,10 @@
-import { hook } from './hook';
-import wrapFactory from './wrapFactory';
-
 function attach(node, callback) {
-  if (('onload' in node) && node.addEventListener) {
+  if (!('onload' in node)) {
+    callback()
+    return
+  }
+
+  if (node.addEventListener) {
     node.addEventListener('load', callback, false);
     node.addEventListener('error', callback, false);
   } else if (node.attachEvent) {
@@ -18,30 +20,36 @@ function attach(node, callback) {
   }
 }
 
-function ScriptHook(node, getCallback){
-  if (node.async || node.defer) {
-    return;
+export class ScriptHook {
+  static init = false
+  static elements = ['script']
+
+  static mapNode(n) {
+    const s = document.createElement('script');
+    s.text = n.text;
+    for (const a of n.attributes) {
+      s.setAttribute(a.name, a.value);
+    }
+
+    return s
   }
 
-  attach(node, getCallback());
+  constructor({ node, blockingCallback }){
+    if (node.src) {
+      attach(node, blockingCallback())
+    }
+  }
 }
 
-function LinkHook(node, getCallback){
-  attach(node, getCallback());
+export class LinkHook {
+  static init = false
+  static elements = ['link']
+
+  constructor({ node, blockingCallback }){
+    if (node.href && node.rel == 'stylesheet') {
+      attach(node, blockingCallback())
+    }
+  }
 }
 
-ScriptHook.initialHook = LinkHook.initialHook = false;
-
-export const hookScripts = wrapFactory(() => [
-  hook('script[src]', ScriptHook),
-]);
-
-export const hookStyleSheets = wrapFactory(() => [
-  hook('link[rel=stylesheet][href]', LinkHook),
-])
-
-export const hookAssets = wrapFactory(() => [
-  hookScripts(),
-  hookStyleSheets(),
-])
 
