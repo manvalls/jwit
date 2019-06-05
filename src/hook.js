@@ -50,6 +50,10 @@ export function hook(Controller, cb){
     return
   }
 
+  if (typeof Controller.shouldHook == 'function' && !safeRun(() => Controller.shouldHook())) {
+    return
+  }
+
   if (!Controller.__witHookId) {
     Controller.__witHookId = nextId.toString(36)
     nextId = (nextId + 1) % 1e15
