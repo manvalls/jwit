@@ -129,10 +129,10 @@ function apply(delta, rootNode, nodes, cb) {
           f.innerHTML = delta[1]
 
           const ref = n.nextSibling
-          parent.removeChild(n)
 
           const cb = cg()
           destroyNode(n, () => {
+            parent.removeChild(n)
             transfer(node => parent.insertBefore(node, ref), f, cb)
           })
         }
@@ -194,8 +194,11 @@ function apply(delta, rootNode, nodes, cb) {
         for(i = 0;i < nodes.length;i++){
           n = nodes[i]
           if (n.parentNode) {
-            n.parentNode.removeChild(n)
-            destroyNode(n, cg())
+            const cb = cg()
+            destroyNode(n, () => {
+              n.parentNode.removeChild(n)
+              cb()
+            })
           }
         }
   
@@ -204,8 +207,11 @@ function apply(delta, rootNode, nodes, cb) {
       case clearType:
         for(i = 0;i < nodes.length;i++){
           n = nodes[i]
-          destroyAllControllersBelow(n, cg())
-          n.innerHTML = ''
+          const cb = cg()
+          destroyAllControllersBelow(n, () => {
+            n.innerHTML = ''
+            cb()
+          })
         }
   
         break
