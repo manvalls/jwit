@@ -288,7 +288,7 @@ export function getControllerBelow(element, Controller) {
 }
 
 export function getControllersAbove(element, Controller) {
-  const controllers = []
+  let controllers = []
 
   while(element = element.parentNode) {
     const ctrl = getController(element, Controller)
@@ -302,7 +302,7 @@ export function getControllersAbove(element, Controller) {
 
 export function getControllersBelow(element, Controller) {
   const foundNodes = element.querySelectorAll(`[wit-ctrl~=${Controller.__witHookId}]`)
-  const controllers = []
+  let controllers = []
 
   for (const node of foundNodes) {
     controllers.push(getController(node, Controller))
@@ -316,7 +316,7 @@ export function getAllControllers(element) {
 }
 
 export function getAllControllersAbove(element) {
-  const controllers = []
+  let controllers = []
 
   while(element = element.parentNode) {
     controllers = controllers.concat(getAllControllers(element))
@@ -327,7 +327,7 @@ export function getAllControllersAbove(element) {
 
 export function getAllControllersBelow(element) {
   const foundNodes = element.querySelectorAll('[wit-ctrl]')
-  const controllers = []
+  let controllers = []
 
   for(const node of foundNodes) {
     controllers = controllers.concat(getAllControllers(node))
