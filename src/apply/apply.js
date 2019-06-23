@@ -50,6 +50,7 @@ function transfer(trf, parent, cb){
     const firstChild = parent.childNodes[0]
     if (!firstChild) {
       schedule(cb)
+      return
     }
 
     parent.removeChild(firstChild)

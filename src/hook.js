@@ -39,7 +39,7 @@ function removeFromMap(list, map, Controller) {
 
 function addHooks(cmap, hooksToRun) {
   if (cmap) {
-    for (const key of cmap) if (cmap.hasOwnProperty(key)) {
+    for (const key in cmap) if (cmap.hasOwnProperty(key)) {
       hooksToRun[key] = cmap[key]
     }
   }
@@ -70,10 +70,15 @@ export function hook(Controller, cb){
         qcb()
       })
 
-      const matchingElements = document.querySelectorAll([
+      const selector = [
         ...(Controller.elements || []),
         ...(Controller.attributes || []).map(attr => `[${attr}]`)
-      ].join(', '))
+      ].join(', ')
+
+      let matchingElements = []
+      if (selector) {
+        matchingElements = document.querySelectorAll(selector)
+      }
 
       for (const elem of matchingElements) {
         runHooks(elem, [Controller], cg())
@@ -93,12 +98,23 @@ export function unhook(Controller) {
 export function getHooksToRun(element) {
   const hooksToRun = {}
 
+  if (!element.tagName) {
+    return []
+  }
+
   addHooks(elementHooks[element.tagName.toLowerCase()], hooksToRun)
   for (const attr of element.attributes) {
     addHooks(attributeHooks[attr.name], hooksToRun)
   }
+  
+  const result = []
+  for (const Controller of values(hooksToRun)) {
+    if (!(element.__witControllers && element.__witControllers.hasOwnProperty(Controller.__witHookId))) {
+      result.push(Controller)
+    }
+  }
 
-  return values(hooksToRun).sort((a, b) => (b.priority || 0) - (a.priority || 0))
+  return result.sort((a, b) => (b.priority || 0) - (a.priority || 0))
 }
 
 export function mapNode(element, hooks) {
@@ -158,7 +174,7 @@ function destroyControllerInternal(node, Controller, cb) {
 
   if (typeof ctrl.onDestroy == 'function') {
     schedule(() => {
-      ctrl.onDestroy({ blockingCallback: callbackGroup(cb) })
+      ctrl.onDestroy({ blockingCallback: callbackGroup(cb), node })
     })
   } else {
     schedule(cb)
@@ -247,25 +263,28 @@ export function processAttrChange(element, cb) {
       attrs[attr.name] = true
     }
     
-    for (const [ctrl, Controller] of values(element.__witControllers || {})) {
+    destroyLoop: for (const [ctrl, Controller] of values(element.__witControllers || {})) {
       if (typeof ctrl.onAttrChange == 'function') {
         schedule(() => {
-          ctrl.onAttrChange({ blockingCallback: cg })
+          ctrl.onAttrChange({ blockingCallback: cg, node: element })
         })
       }
 
       if (toArray(Controller.elements).indexOf(tagName) != -1) {
-        continue
+        continue destroyLoop
       }
 
       for (const attr of toArray(Controller.attributes)) {
         if (attrs[attr]) {
-          continue
+          continue destroyLoop
         }
       }
 
       destroyControllerInternal(element, Controller, cg())
     }
+
+    const hooksToRun = getHooksToRun(element)
+    runHooks(element, hooksToRun, cg())
   })
 }
 
@@ -274,6 +293,10 @@ export function getController(element, Controller) {
 }
 
 export function getControllerAbove(element, Controller) {
+  if (!element) {
+    return
+  }
+
   while(element = element.parentNode) {
     const ctrl = getController(element, Controller)
     if (ctrl) {
@@ -283,12 +306,20 @@ export function getControllerAbove(element, Controller) {
 }
 
 export function getControllerBelow(element, Controller) {
+  if (!element) {
+    return
+  }
+
   const foundNode = element.querySelector(`[wit-ctrl~=${Controller.__witHookId}]`)
   return getController(foundNode, Controller)
 }
 
 export function getControllersAbove(element, Controller) {
   let controllers = []
+
+  if (!element) {
+    return controllers
+  }
 
   while(element = element.parentNode) {
     const ctrl = getController(element, Controller)
@@ -301,6 +332,10 @@ export function getControllersAbove(element, Controller) {
 }
 
 export function getControllersBelow(element, Controller) {
+  if (!element) {
+    return []
+  }
+
   const foundNodes = element.querySelectorAll(`[wit-ctrl~=${Controller.__witHookId}]`)
   let controllers = []
 
@@ -312,11 +347,19 @@ export function getControllersBelow(element, Controller) {
 }
 
 export function getAllControllers(element) {
+  if (!element) {
+    return []
+  }
+
   return values(element.__witControllers || {}).map(([ctrl]) => ctrl)
 }
 
 export function getAllControllersAbove(element) {
   let controllers = []
+
+  if (!element) {
+    return controllers
+  }
 
   while(element = element.parentNode) {
     controllers = controllers.concat(getAllControllers(element))
@@ -326,6 +369,10 @@ export function getAllControllersAbove(element) {
 }
 
 export function getAllControllersBelow(element) {
+  if (!element) {
+    return []
+  }
+
   const foundNodes = element.querySelectorAll('[wit-ctrl]')
   let controllers = []
 

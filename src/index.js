@@ -18,6 +18,7 @@ export { default as queue, initQueue } from './queue';
 
 export {
   hook,
+  unhook,
   getController,
   getControllerBelow,
   getControllerAbove,
