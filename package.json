@@ -7,10 +7,8 @@
   "es": "./dist/wit.es.js",
   "dependencies": {},
   "devDependencies": {
-    "@babel/core": "^7.4.5",
     "@vlrz/eslint-config": "^1.0.6",
     "@vlrz/rollup-config": "^1.0.1",
-    "babel-eslint": "^10.0.1",
     "eslint": "^6.8.0",
     "expect": "^25.1.0",
     "istanbul-instrumenter-loader": "^3.0.1",
