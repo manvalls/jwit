@@ -76,7 +76,15 @@ function getFragment(node, html) {
 }
 
 function mapScript(node) {
-  const script = document.createElement('script')
+  const isAttr = node.getAttribute('is')
+
+  let script
+  if (isAttr) {
+    script = document.createElement('script', { is: isAttr })
+  } else {
+    script = document.createElement('script')
+  }
+
   script.text = node.text
   for (let i = 0; i < node.attributes.length; i++) {
     const attribute = node.attributes[i]
