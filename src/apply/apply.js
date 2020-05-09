@@ -77,6 +77,7 @@ function getFragment(node, html) {
 
 function mapScript(node) {
   const isAttr = node.getAttribute('is')
+  const document = node.ownerDocument
 
   let script
   if (isAttr) {
