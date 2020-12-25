@@ -16,26 +16,6 @@ describe('html', () => {
     expect(document.body.innerHTML).toBe('<div>foo</div> <div>bar</div>')
   })
 
-  it('should wait on inline scripts', async () => {
-    const promise = apply(
-      one('body',
-        html('foo<script>window.unlocker = witProcessMutex.lock()</script>bar'),
-      ),
-    )
-
-    const promise2 = apply(
-      one('body',
-        append('foo'),
-      ),
-    )
-
-    expect(document.body.innerHTML).toEqual('foo<script>window.unlocker = witProcessMutex.lock()</script>');
-    (await window.unlocker)()
-    await promise
-    await promise2
-    expect(document.body.innerHTML).toEqual('foo<script>window.unlocker = witProcessMutex.lock()</script>barfoo')
-  })
-
   it('should wait on external scripts', async () => {
     const promise = apply(
       one('body',
@@ -49,6 +29,8 @@ describe('html', () => {
         `.trim().replace(/\s{2}/g, '')),
       ),
     )
+
+    await new Promise(res => setTimeout(res, 10))
 
     expect(document.body.innerHTML).toEqual(`
       <span>foobar</span>
@@ -76,6 +58,7 @@ describe('html', () => {
       ),
     )
 
+    await new Promise(res => setTimeout(res, 10))
     expect(document.body.innerHTML).toEqual('foo<link href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css" rel="stylesheet">')
     await promise
     expect(document.body.innerHTML).toEqual('foo<link href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css" rel="stylesheet">bar')

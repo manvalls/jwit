@@ -19,10 +19,10 @@ export const prependType = 15
 export const insertAfterType = 16
 export const insertBeforeType = 17
 
-export const addAttrType = 18
-export const setAttrType = 19
+export const setAttrType = 18
+export const replaceAttrType = 19
 export const rmAttrType = 20
-export const addStylesType = 21
+export const setStylesType = 21
 export const rmStylesType = 22
-export const addClassType = 23
-export const rmClassType = 24
+export const addClassesType = 23
+export const rmClassesType = 24

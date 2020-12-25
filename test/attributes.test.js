@@ -1,13 +1,13 @@
-import { html, one, addAttr, setAttr, rmAttr, addStyles, rmStyles, addClass, rmClass, apply } from '../src'
+import { html, one, setAttr, replaceAttr, rmAttr, setStyles, rmStyles, addClasses, rmClasses, apply } from '../src'
 import expect from 'expect'
 
-describe('addAttr', () => {
+describe('setAttr', () => {
   it('should add an attribute to the element', async () => {
     await apply(
       one('body',
         html('<div foo="bar">one</div>'),
         one('div',
-          addAttr({ bar: 'baz' }),
+          setAttr({ bar: 'baz' }),
         ),
       ),
     )
@@ -16,13 +16,13 @@ describe('addAttr', () => {
   })
 })
 
-describe('setAttr', () => {
+describe('replaceAttr', () => {
   it('should set the attributes of the element', async () => {
     await apply(
       one('body',
         html('<div foo="bar">one</div>'),
         one('div',
-          setAttr({ bar: 'baz' }),
+          replaceAttr({ bar: 'baz' }),
         ),
       ),
     )
@@ -46,13 +46,13 @@ describe('rmAttr', () => {
   })
 })
 
-describe('addStyles', () => {
+describe('setStyles', () => {
   it('should add styles to the element', async () => {
     await apply(
       one('body',
         html('<div style="color: black;">one</div>'),
         one('div',
-          addStyles({ border: '1px solid black' }),
+          setStyles({ border: '1px solid black' }),
         ),
       ),
     )
@@ -76,13 +76,13 @@ describe('rmStyles', () => {
   })
 })
 
-describe('addClass', () => {
+describe('addClasses', () => {
   it('should add classes to the element', async () => {
     await apply(
       one('body',
         html('<div class="foo bar">one</div>'),
         one('div',
-          addClass('baz bar'),
+          addClasses('baz bar'),
         ),
       ),
     )
@@ -91,13 +91,13 @@ describe('addClass', () => {
   })
 })
 
-describe('rmClass', () => {
+describe('rmClasses', () => {
   it('should remove classes from the element', async () => {
     await apply(
       one('body',
         html('<div class="foo bar">one</div>'),
         one('div',
-          rmClass('baz bar'),
+          rmClasses('baz bar'),
         ),
       ),
     )

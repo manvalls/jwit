@@ -6,10 +6,10 @@ export {
   html, replace,
   append, prepend, insertAfter,
   insertBefore,
-  addAttr, setAttr, rmAttr,
-  addStyles, rmStyles,
-  addClass, rmClass,
+  setAttr, replaceAttr, rmAttr,
+  setStyles, rmStyles,
+  addClasses, rmClasses,
 } from './deltas'
 
 export { default as apply } from './apply/index'
-export { processMutex, queueMutex } from './mutexes'
+export { default as mutex } from './mutex'

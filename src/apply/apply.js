@@ -5,9 +5,9 @@ import {
   removeType, clearType,
   htmlType, replaceType, appendType,
   prependType, insertAfterType, insertBeforeType,
-  addAttrType, setAttrType, rmAttrType,
-  addStylesType, rmStylesType, addClassType,
-  rmClassType,
+  setAttrType, replaceAttrType, rmAttrType,
+  setStylesType, rmStylesType, addClassesType,
+  rmClassesType,
 } from '../types'
 
 import {
@@ -16,221 +16,38 @@ import {
 } from './groupUtils'
 
 import { fromClass, toClass } from './class'
+import { setAttribute, forEach, getFragment, transfer } from './utils'
 
-function setAttribute(node, key, value) {
-  node.setAttribute(key, value)
-  if (key == 'value' && node.tagName.toLowerCase() == 'input') {
-    node.value = value
-  }
-}
-
-function forEach(elems, operation, cb) {
-  let i = 0
-  let isAsync = false
-
-  function step() {
-    while (i < elems.length) {
-      const wasOperationAsync = operation(elems[i], () => {
-        i++
-        step()
-      })
-
-      isAsync = isAsync || wasOperationAsync
-
-      if (wasOperationAsync) {
-        return
-      }
-
-      i++
-    }
-
-    if (isAsync) {
-      cb()
-    }
-  }
-
-  step()
-  return isAsync
-}
-
-function applyAll(parentDelta, startIndex, rootNode, nodes, waitPending, cb) {
-  return forEach(parentDelta.slice(startIndex), (delta, innerCb) => {
-    return apply(delta, rootNode, nodes, waitPending, innerCb)
-  }, cb)
-}
-
-function clone(elems) {
-  const result = []
-  for (let i = 0;i < elems.length;i++) {
-    result.push(elems[i])
-  }
-
-  return result
-}
-
-function getFragment(node, html) {
-  const fragment = node.cloneNode()
-  fragment.innerHTML = html
-  markSingularNodes(fragment)
-  return fragment
-}
-
-function mapScript(node) {
-  const isAttr = node.getAttribute('is')
-  const document = node.ownerDocument
-
-  let script
-  if (isAttr) {
-    script = document.createElement('script', { is: isAttr })
-  } else {
-    script = document.createElement('script')
-  }
-
-  script.text = node.text
-  for (let i = 0; i < node.attributes.length; i++) {
-    const attribute = node.attributes[i]
-    script.setAttribute(attribute.name, attribute.value)
-  }
-
-  return script
-}
-
-function onLoad(node, callback) {
-  if (!('onload' in node)) {
-    return false
-  }
-
-  if (node.addEventListener) {
-    node.addEventListener('load', callback, false)
-    node.addEventListener('error', callback, false)
-    return true
-  }
-
-  if (node.attachEvent) {
-    node.attachEvent('onload', callback)
-    node.attachEvent('onerror', callback)
-    node.attachEvent('onreadystatechange', () => {
-      if (node.readyState == 'loaded' || node.readyState == 'complete') {
-        callback()
-      }
-    })
-
-    return true
-  }
-
-  return false
-}
-
-function waitUntilScriptLoaded(node, cb) {
-  if (node.src) {
-    return onLoad(node, cb)
-  }
-
-  return false
-}
-
-function waitUntilLinkLoaded(node, cb) {
-  if (node.href && node.rel == 'stylesheet') {
-    return onLoad(node, cb)
-  }
-
-  return false
-}
-
-function doAsync(wrapper, cb, handler) {
-  const isAsync = wrapper(() => {
-    const isAsync = handler(cb)
-    if (!isAsync) {
-      cb()
-    }
-  })
-
-  if (!isAsync) {
-    return handler(cb)
-  }
-
-  return true
-}
-
-function transfer(trf, parent, waitPending, cb) {
-  return forEach(clone(parent.childNodes), (node, callback) => {
-    if (!node.__witSingularNode) {
-      trf(node)
-      return false
-    }
-
-    let ran = false
-    const cb = () => {
-      if (ran) {
-        return
-      }
-
-      ran = true
-      callback()
-    }
-
-    switch (node.tagName.toLowerCase()) {
-      case 'script':
-        const script = mapScript(node)
-        trf(script)
-
-        return doAsync(cb => waitUntilScriptLoaded(script, cb), cb, cb => {
-          return waitPending(cb)
-        })
-      case 'link':
-        trf(node)
-        return waitUntilLinkLoaded(node, cb)
-      default:
-        const clone = node.cloneNode()
-        trf(clone)
-        return transfer(child => clone.appendChild(child), node, waitPending, cb)
-    }
-  }, cb)
-}
-
-function markSingularNodes(fragment) {
-  const singularNodes = fragment.querySelectorAll('script, link[rel=stylesheet]')
-
-  for (let i = 0;i < singularNodes.length;i++) {
-    let node = singularNodes[i]
-
-    while (node) {
-      node.__witSingularNode = true
-      node = node.parentNode
-    }
-  }
-}
-
-function apply(delta, rootNode, nodes, waitPending, cb) {
+function apply(delta, rootNode, nodes) {
 
   switch (delta[0]) {
 
     case sliceType:
-      return applyAll(delta, 1, rootNode, nodes, waitPending, cb)
+      return forEach(delta.slice(1), d => apply(d, rootNode, nodes))
 
     case rootType:
-      return applyAll(delta, 1, rootNode, [rootNode], waitPending, cb)
+      return forEach(delta.slice(1), d => apply(d, rootNode, [rootNode]))
 
     case selectorType:
-      return applyAll(delta, 2, rootNode, mapNodes(nodes, mapQuerySelector(delta[1])), waitPending, cb)
+      return forEach(delta.slice(2), d => apply(d, rootNode, mapNodes(nodes, mapQuerySelector(delta[1]))))
 
     case selectorAllType:
-      return applyAll(delta, 2, rootNode, mapNodes(nodes, mapQuerySelectorAll(delta[1])), waitPending, cb)
+      return forEach(delta.slice(2), d => apply(d, rootNode, mapNodes(nodes, mapQuerySelectorAll(delta[1]))))
 
     case parentType:
-      return applyAll(delta, 1, rootNode, mapNodes(nodes, mapParent), waitPending, cb)
+      return forEach(delta.slice(1), d => apply(d, rootNode, mapNodes(nodes, mapParent)))
 
     case firstChildType:
-      return applyAll(delta, 1, rootNode, mapNodes(nodes, mapFirstChild), waitPending, cb)
+      return forEach(delta.slice(1), d => apply(d, rootNode, mapNodes(nodes, mapFirstChild)))
 
     case lastChildType:
-      return applyAll(delta, 1, rootNode, mapNodes(nodes, mapLastChild), waitPending, cb)
+      return forEach(delta.slice(1), d => apply(d, rootNode, mapNodes(nodes, mapLastChild)))
 
     case prevSiblingType:
-      return applyAll(delta, 1, rootNode, mapNodes(nodes, mapPrevSibling), waitPending, cb)
+      return forEach(delta.slice(1), d => apply(d, rootNode, mapNodes(nodes, mapPrevSibling)))
 
     case nextSiblingType:
-      return applyAll(delta, 1, rootNode, mapNodes(nodes, mapNextSibling), waitPending, cb)
+      return forEach(delta.slice(1), d => apply(d, rootNode, mapNodes(nodes, mapNextSibling)))
 
     case removeType: {
       for (let i = 0;i < nodes.length;i++) {
@@ -251,7 +68,7 @@ function apply(delta, rootNode, nodes, waitPending, cb) {
       break
     }
 
-    case addAttrType: {
+    case setAttrType: {
       const attrMap = delta[1]
       for (let i = 0;i < nodes.length;i++) {
         const node = nodes[i]
@@ -263,7 +80,7 @@ function apply(delta, rootNode, nodes, waitPending, cb) {
       break
     }
 
-    case setAttrType: {
+    case replaceAttrType: {
       const attrMap = delta[1]
       for (let i = 0;i < nodes.length;i++) {
         const node = nodes[i]
@@ -294,7 +111,7 @@ function apply(delta, rootNode, nodes, waitPending, cb) {
       break
     }
 
-    case addStylesType: {
+    case setStylesType: {
       const stylesMap = delta[1]
       for (let i = 0;i < nodes.length;i++) {
         const node = nodes[i]
@@ -323,7 +140,7 @@ function apply(delta, rootNode, nodes, waitPending, cb) {
       break
     }
 
-    case addClassType: {
+    case addClassesType: {
       const stylesMap = fromClass(delta[1])
       for (let i = 0;i < nodes.length;i++) {
         const node = nodes[i]
@@ -339,7 +156,7 @@ function apply(delta, rootNode, nodes, waitPending, cb) {
       break
     }
 
-    case rmClassType: {
+    case rmClassesType: {
       const classMap = fromClass(delta[1])
       for (let i = 0;i < nodes.length;i++) {
         let node = nodes[i]
@@ -356,56 +173,56 @@ function apply(delta, rootNode, nodes, waitPending, cb) {
     }
 
     case htmlType:
-      return forEach(nodes, (node, innerCb) => {
+      return forEach(nodes, (node) => {
         node.innerHTML = ''
-        return transfer(child => node.appendChild(child), getFragment(node, delta[1]), waitPending, innerCb)
-      }, cb)
+        return transfer(child => node.appendChild(child), getFragment(node, delta[1]))
+      })
 
     case replaceType:
-      return forEach(nodes, (node, innerCb) => {
+      return forEach(nodes, (node) => {
         const parent = node.parentNode
         if (!parent) {
-          return false
+          return Promise.resolve()
         }
 
         const ref = node.nextSibling
         parent.removeChild(node)
 
-        return transfer(child => parent.insertBefore(child, ref), getFragment(parent, delta[1]), waitPending, innerCb)
-      }, cb)
+        return transfer(child => parent.insertBefore(child, ref), getFragment(parent, delta[1]))
+      })
 
     case appendType:
-      return forEach(nodes, (node, innerCb) => {
-        return transfer(child => node.appendChild(child), getFragment(node, delta[1]), waitPending, innerCb)
-      }, cb)
+      return forEach(nodes, (node) => {
+        return transfer(child => node.appendChild(child), getFragment(node, delta[1]))
+      })
 
     case prependType:
-      return forEach(nodes, (node, innerCb) => {
+      return forEach(nodes, (node) => {
         const firstChild = node.firstChild
-        return transfer(child => node.insertBefore(child, firstChild), getFragment(node, delta[1]), waitPending, innerCb)
-      }, cb)
+        return transfer(child => node.insertBefore(child, firstChild), getFragment(node, delta[1]))
+      })
 
     case insertAfterType:
-      return forEach(nodes, (node, innerCb) => {
+      return forEach(nodes, (node) => {
         if (!node.parentNode) {
-          return false
+          return Promise.resolve()
         }
 
-        return transfer(child => node.parentNode.insertBefore(child, node.nextSibling), getFragment(node.parentNode, delta[1]), waitPending, innerCb)
-      }, cb)
+        return transfer(child => node.parentNode.insertBefore(child, node.nextSibling), getFragment(node.parentNode, delta[1]))
+      })
 
     case insertBeforeType:
-      return forEach(nodes, (node, innerCb) => {
+      return forEach(nodes, (node) => {
         if (!node.parentNode) {
-          return false
+          return Promise.resolve()
         }
 
-        return transfer(child => node.parentNode.insertBefore(child, node), getFragment(node.parentNode, delta[1]), waitPending, innerCb)
-      }, cb)
+        return transfer(child => node.parentNode.insertBefore(child, node), getFragment(node.parentNode, delta[1]))
+      })
 
   }
 
-  return waitPending(cb)
+  return Promise.resolve()
 }
 
 export default apply

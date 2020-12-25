@@ -1,5 +1,3 @@
-import safeRun from './safeRun'
-
 export function mapNodes(nodes, mapFn) {
   var result = []
   var children, i, j, c
@@ -18,11 +16,11 @@ export function mapNodes(nodes, mapFn) {
 }
 
 export function mapQuerySelector(selector) {
-  return node => safeRun(() => [node.querySelector(selector)]) || []
+  return node => [node.querySelector(selector)]
 }
 
 export function mapQuerySelectorAll(selector) {
-  return node => safeRun(() => node.querySelectorAll(selector)) || []
+  return node => node.querySelectorAll(selector)
 }
 
 export function mapParent(node) {

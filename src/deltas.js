@@ -9,9 +9,9 @@ import {
   htmlType, replaceType, appendType,
   prependType, insertAfterType, insertBeforeType,
 
-  addAttrType, setAttrType, rmAttrType,
-  addStylesType, rmStylesType, addClassType,
-  rmClassType,
+  setAttrType, replaceAttrType, rmAttrType,
+  setStylesType, rmStylesType, addClassesType,
+  rmClassesType,
 } from './types'
 
 function factory(type) {
@@ -45,10 +45,10 @@ export const append =         factory(appendType)
 export const prepend =        factory(prependType)
 export const insertAfter =    factory(insertAfterType)
 export const insertBefore =   factory(insertBeforeType)
-export const addAttr =        factory(addAttrType)
 export const setAttr =        factory(setAttrType)
+export const replaceAttr =        factory(replaceAttrType)
 export const rmAttr =         factory(rmAttrType)
-export const addStyles =      factory(addStylesType)
+export const setStyles =      factory(setStylesType)
 export const rmStyles =       factory(rmStylesType)
-export const addClass =       factory(addClassType)
-export const rmClass =        factory(rmClassType)
+export const addClasses =       factory(addClassesType)
+export const rmClasses =        factory(rmClassesType)
